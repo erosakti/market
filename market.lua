@@ -1,11 +1,9 @@
 --[[ 
-    AUTO BUY V9 - FINAL GUI VERSION
-    Fitur Baru: 
-    - Tombol Close (X) untuk menghapus GUI & Stop Bot.
-    - Indikator Live Scan tetap ada.
+    AUTO BUY V10 - GUI FIX (ZINDEX)
+    Perbaikan: Menambahkan ZIndex agar tombol tidak tertutup background.
 ]]
 
--- 1. BERSIHKAN GUI LAMA
+-- 1. HAPUS GUI LAMA
 local CoreGui = game:GetService("CoreGui")
 if CoreGui:FindFirstChild("AutoBuyNativeUI") then CoreGui.AutoBuyNativeUI:Destroy() end
 
@@ -25,55 +23,77 @@ local BuyRemote = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("Tra
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoBuyNativeUI"
 ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- PENTING!
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 240, 0, 300)
+MainFrame.Size = UDim2.new(0, 240, 0, 320) -- Sedikit lebih panjang
 MainFrame.Active = true
-MainFrame.Draggable = true 
+MainFrame.Draggable = true
+MainFrame.ZIndex = 1 -- Layer Paling Bawah
 
--- Judul
+-- Judul (Header)
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "  BOT AUTO BUY (V9)"
+Title.Text = "  BOT AUTO BUY (V10)"
 Title.TextColor3 = Color3.WHITE
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 2 -- Layer Atas
 
--- Kolom Input Helper
-local function createInput(yPos, labelText, defaultVal, callback)
-    local lbl = Instance.new("TextLabel")
-    lbl.Parent = MainFrame
-    lbl.Position = UDim2.new(0, 10, 0, yPos)
-    lbl.Size = UDim2.new(0, 200, 0, 20)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = labelText
-    lbl.TextColor3 = Color3.fromRGB(200, 200, 200)
-    lbl.Font = Enum.Font.SourceSans
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
+-- LABEL & INPUT 1 (Nama Item)
+local LabelItem = Instance.new("TextLabel")
+LabelItem.Parent = MainFrame
+LabelItem.Position = UDim2.new(0, 10, 0, 45)
+LabelItem.Size = UDim2.new(0, 200, 0, 20)
+LabelItem.BackgroundTransparency = 1
+LabelItem.Text = "Nama Item (Case Sensitive):"
+LabelItem.TextColor3 = Color3.fromRGB(200, 200, 200)
+LabelItem.Font = Enum.Font.SourceSans
+LabelItem.TextXAlignment = Enum.TextXAlignment.Left
+LabelItem.ZIndex = 2
 
-    local box = Instance.new("TextBox")
-    box.Parent = MainFrame
-    box.Position = UDim2.new(0, 10, 0, yPos + 20)
-    box.Size = UDim2.new(0, 220, 0, 30)
-    box.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    box.TextColor3 = Color3.WHITE
-    box.Text = defaultVal
-    box.Font = Enum.Font.SourceSansBold
-    box.TextSize = 16
-    
-    box.FocusLost:Connect(function() callback(box.Text) end)
-    return box
-end
+local InputItem = Instance.new("TextBox")
+InputItem.Parent = MainFrame
+InputItem.Position = UDim2.new(0, 10, 0, 65)
+InputItem.Size = UDim2.new(0, 220, 0, 30)
+InputItem.BackgroundColor3 = Color3.fromRGB(50, 50, 60) -- Warna lebih terang dikit
+InputItem.TextColor3 = Color3.WHITE
+InputItem.Text = "Seal"
+InputItem.Font = Enum.Font.SourceSansBold
+InputItem.TextSize = 16
+InputItem.ZIndex = 2
+InputItem.FocusLost:Connect(function() getgenv().Config.Target = InputItem.Text end)
 
-createInput(45, "Nama Item (Case Sensitive):", "Seal", function(val) getgenv().Config.Target = val end)
-createInput(105, "Harga Maksimal:", "10000", function(val) getgenv().Config.MaxPrice = tonumber(val) or 10000 end)
+-- LABEL & INPUT 2 (Harga)
+local LabelPrice = Instance.new("TextLabel")
+LabelPrice.Parent = MainFrame
+LabelPrice.Position = UDim2.new(0, 10, 0, 105)
+LabelPrice.Size = UDim2.new(0, 200, 0, 20)
+LabelPrice.BackgroundTransparency = 1
+LabelPrice.Text = "Harga Maksimal:"
+LabelPrice.TextColor3 = Color3.fromRGB(200, 200, 200)
+LabelPrice.Font = Enum.Font.SourceSans
+LabelPrice.TextXAlignment = Enum.TextXAlignment.Left
+LabelPrice.ZIndex = 2
+
+local InputPrice = Instance.new("TextBox")
+InputPrice.Parent = MainFrame
+InputPrice.Position = UDim2.new(0, 10, 0, 125)
+InputPrice.Size = UDim2.new(0, 220, 0, 30)
+InputPrice.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+InputPrice.TextColor3 = Color3.WHITE
+InputPrice.Text = "10000"
+InputPrice.Font = Enum.Font.SourceSansBold
+InputPrice.TextSize = 16
+InputPrice.ZIndex = 2
+InputPrice.FocusLost:Connect(function() getgenv().Config.MaxPrice = tonumber(InputPrice.Text) or 10000 end)
 
 -- Indikator Live Scan
 local ScanInfo = Instance.new("TextLabel")
@@ -85,6 +105,7 @@ ScanInfo.Text = "Menunggu..."
 ScanInfo.TextColor3 = Color3.fromRGB(255, 255, 0)
 ScanInfo.Font = Enum.Font.Code
 ScanInfo.TextSize = 12
+ScanInfo.ZIndex = 2
 
 -- Tombol On/Off
 local ToggleBtn = Instance.new("TextButton")
@@ -96,55 +117,63 @@ ToggleBtn.Text = "BOT: MATI"
 ToggleBtn.TextColor3 = Color3.WHITE
 ToggleBtn.Font = Enum.Font.GothamBlack
 ToggleBtn.TextSize = 20
+ToggleBtn.ZIndex = 2
 
 -- Log Status
 local StatusLog = Instance.new("TextLabel")
 StatusLog.Parent = MainFrame
 StatusLog.Position = UDim2.new(0, 10, 0, 250)
-StatusLog.Size = UDim2.new(0, 220, 0, 40)
+StatusLog.Size = UDim2.new(0, 220, 0, 60)
 StatusLog.BackgroundTransparency = 1
 StatusLog.Text = "Siap dijalankan."
 StatusLog.TextColor3 = Color3.fromRGB(150, 150, 150)
 StatusLog.TextSize = 12
 StatusLog.TextWrapped = true
+StatusLog.TextYAlignment = Enum.TextYAlignment.Top
+StatusLog.ZIndex = 2
 
--- [BARU] Tombol Minimize (-)
+-- Tombol Minimize (-)
 local MiniBtn = Instance.new("TextButton")
 MiniBtn.Parent = MainFrame
 MiniBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-MiniBtn.Position = UDim2.new(0.70, 0, 0, 0) -- Digeser ke kiri dikit
+MiniBtn.Position = UDim2.new(0.70, 0, 0, 0)
 MiniBtn.Size = UDim2.new(0, 35, 0, 35)
 MiniBtn.Text = "_"
 MiniBtn.TextColor3 = Color3.WHITE
 MiniBtn.TextSize = 20
+MiniBtn.ZIndex = 3
 
--- [BARU] Tombol Close (X)
+-- Tombol Close (X)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = MainFrame
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Merah
-CloseBtn.Position = UDim2.new(0.85, 0, 0, 0) -- Paling kanan
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.Position = UDim2.new(0.85, 0, 0, 0)
 CloseBtn.Size = UDim2.new(0, 35, 0, 35)
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.WHITE
 CloseBtn.TextSize = 18
+CloseBtn.ZIndex = 3
 
--- Logika Tombol GUI
+-- === LOGIKA GUI ===
 local isMin = false
 MiniBtn.MouseButton1Click:Connect(function()
     isMin = not isMin
     if isMin then
         MainFrame:TweenSize(UDim2.new(0, 240, 0, 35), "Out", "Quad", 0.3, true)
         ToggleBtn.Visible = false; ScanInfo.Visible = false; StatusLog.Visible = false
+        LabelItem.Visible = false; InputItem.Visible = false
+        LabelPrice.Visible = false; InputPrice.Visible = false
     else
-        MainFrame:TweenSize(UDim2.new(0, 240, 0, 300), "Out", "Quad", 0.3, true)
+        MainFrame:TweenSize(UDim2.new(0, 240, 0, 320), "Out", "Quad", 0.3, true)
         ToggleBtn.Visible = true; ScanInfo.Visible = true; StatusLog.Visible = true
+        LabelItem.Visible = true; InputItem.Visible = true
+        LabelPrice.Visible = true; InputPrice.Visible = true
     end
 end)
 
 CloseBtn.MouseButton1Click:Connect(function()
-    getgenv().Config.Running = false -- Matikan Bot
-    ScreenGui:Destroy() -- Hapus Menu
-    print("Bot Ditutup.")
+    getgenv().Config.Running = false
+    ScreenGui:Destroy()
 end)
 
 ToggleBtn.MouseButton1Click:Connect(function()
@@ -159,7 +188,7 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 4. LOGIKA SCANNER
+-- === LOGIKA SCANNER (BACKEND) ===
 local function getPrice(booth)
     local prices = {}
     for _, d in pairs(booth:GetDescendants()) do
