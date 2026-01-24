@@ -1,15 +1,16 @@
 --[[ 
-    🏆 AUTO BUY V65 - GUI FIX
-    Perbaikan:
-    - Memperbaiki bug syntax 'UICorner' yang bikin script crash di V64.
-    - GUI sekarang pasti muncul lengkap (Start/Stop/Close).
+    🏆 AUTO BUY V66 - GUI MANUAL MODE (ANTI-CRASH)
+    
+    Fix Spesifik untuk HP:
+    - Menghapus fungsi ':Clone()' yang bikin script kamu macet di tengah.
+    - Semua tombol ditulis manual (Instance.new) agar 100% muncul.
 ]]
 
 -- === GLOBAL SETTINGS ===
 getgenv().SniperConfig = {
     Running = false,
-    TargetName = "Seal", -- Default
-    MaxPrice = 25000,    -- Default
+    TargetName = "Seal", 
+    MaxPrice = 25000,    
     Delay = 0.5
 }
 
@@ -23,7 +24,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- === 1. MEMBUAT GUI ===
+-- === 1. MEMBUAT GUI (MANUAL START) ===
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "SealSniperUI"
 ScreenGui.Parent = CoreGui
@@ -34,29 +35,26 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 MainFrame.BorderSizePixel = 0
 MainFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 240, 0, 270)
+MainFrame.Size = UDim2.new(0, 240, 0, 280) -- Sedikit lebih panjang
 MainFrame.Active = true
 MainFrame.Draggable = true 
 
--- Corner Frame
 local UICorner = Instance.new("UICorner")
 UICorner.Parent = MainFrame
 
--- Judul
+-- JUDUL
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 10, 0, 5)
 Title.Size = UDim2.new(0, 150, 0, 30)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "AUTO BUY V65"
+Title.Text = "AUTO BUY V66"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- === INPUT FIELDS ===
-
--- Label Nama
+-- LABEL NAMA
 local Label1 = Instance.new("TextLabel")
 Label1.Parent = MainFrame
 Label1.BackgroundTransparency = 1
@@ -67,7 +65,7 @@ Label1.Text = "Nama Item (Case Sensitive):"
 Label1.TextColor3 = Color3.fromRGB(200, 200, 200)
 Label1.TextXAlignment = Enum.TextXAlignment.Left
 
--- Input Nama
+-- INPUT NAMA
 local InputName = Instance.new("TextBox")
 InputName.Parent = MainFrame
 InputName.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -78,26 +76,35 @@ InputName.PlaceholderText = "Contoh: Seal"
 InputName.Text = getgenv().SniperConfig.TargetName
 InputName.TextColor3 = Color3.fromRGB(255, 255, 0)
 InputName.TextSize = 14
--- FIX BUG DISINI:
-local corner1 = Instance.new("UICorner")
-corner1.Parent = InputName
+local cornerName = Instance.new("UICorner")
+cornerName.Parent = InputName
 
--- Label Harga
-local Label2 = Label1:Clone()
+-- LABEL HARGA (DIBUAT MANUAL, TIDAK CLONE)
+local Label2 = Instance.new("TextLabel")
 Label2.Parent = MainFrame
+Label2.BackgroundTransparency = 1
 Label2.Position = UDim2.new(0, 10, 0, 115)
+Label2.Size = UDim2.new(1, -20, 0, 20)
+Label2.Font = Enum.Font.Gotham
 Label2.Text = "Harga Maksimal:"
+Label2.TextColor3 = Color3.fromRGB(200, 200, 200)
+Label2.TextXAlignment = Enum.TextXAlignment.Left
 
--- Input Harga
-local InputPrice = InputName:Clone()
+-- INPUT HARGA (DIBUAT MANUAL, TIDAK CLONE)
+local InputPrice = Instance.new("TextBox")
 InputPrice.Parent = MainFrame
+InputPrice.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 InputPrice.Position = UDim2.new(0, 10, 0, 140)
+InputPrice.Size = UDim2.new(1, -20, 0, 35)
+InputPrice.Font = Enum.Font.GothamBold
 InputPrice.PlaceholderText = "Contoh: 25000"
 InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice)
+InputPrice.TextColor3 = Color3.fromRGB(255, 255, 0)
+InputPrice.TextSize = 14
+local cornerPrice = Instance.new("UICorner")
+cornerPrice.Parent = InputPrice
 
--- === TOMBOL KONTROL ===
-
--- Tombol START/STOP
+-- TOMBOL START
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = MainFrame
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -107,11 +114,10 @@ ToggleBtn.Font = Enum.Font.GothamBlack
 ToggleBtn.Text = "START SNIPER"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 20
--- FIX BUG DISINI:
 local cornerBtn = Instance.new("UICorner")
 cornerBtn.Parent = ToggleBtn
 
--- Tombol CLOSE [X]
+-- TOMBOL CLOSE X
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = MainFrame
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
@@ -124,7 +130,7 @@ CloseBtn.TextSize = 16
 local cornerClose = Instance.new("UICorner")
 cornerClose.Parent = CloseBtn
 
--- Tombol MINIMIZE [-]
+-- TOMBOL MINIMIZE -
 local MinBtn = Instance.new("TextButton")
 MinBtn.Parent = MainFrame
 MinBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -137,7 +143,7 @@ MinBtn.TextSize = 16
 local cornerMin = Instance.new("UICorner")
 cornerMin.Parent = MinBtn
 
--- Tombol RESTORE [UI]
+-- TOMBOL RESTORE
 local RestoreBtn = Instance.new("TextButton")
 RestoreBtn.Parent = ScreenGui
 RestoreBtn.Name = "RestoreButton"
@@ -253,4 +259,4 @@ task.spawn(function()
     end
 end)
 
-print("✅ GUI V65 LOADED (FIXED)")
+print("✅ GUI V66 LOADED (MANUAL MODE)")
