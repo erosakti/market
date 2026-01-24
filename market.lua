@@ -1,20 +1,19 @@
 --[[ 
-    🏆 AUTO BUY V64 - GUI COMPLETE EDITION
-    Fitur: 
-    - Universal Sniper (Ketik nama pet apa saja).
-    - Tombol CLOSE [X] untuk mematikan script total.
-    - Tombol MINIMIZE [-] untuk menyembunyikan GUI.
+    🏆 AUTO BUY V65 - GUI FIX
+    Perbaikan:
+    - Memperbaiki bug syntax 'UICorner' yang bikin script crash di V64.
+    - GUI sekarang pasti muncul lengkap (Start/Stop/Close).
 ]]
 
 -- === GLOBAL SETTINGS ===
 getgenv().SniperConfig = {
     Running = false,
-    TargetName = "Seal", -- Default Target
-    MaxPrice = 25000,    -- Default Budget
-    Delay = 0.5          -- Kecepatan Scan
+    TargetName = "Seal", -- Default
+    MaxPrice = 25000,    -- Default
+    Delay = 0.5
 }
 
--- Hapus GUI lama jika ada (Biar gak numpuk)
+-- Hapus GUI lama
 if game.CoreGui:FindFirstChild("SealSniperUI") then
     game.CoreGui.SealSniperUI:Destroy()
 end
@@ -35,10 +34,11 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 MainFrame.BorderSizePixel = 0
 MainFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 240, 0, 270) -- Lebar sedikit ditambah
+MainFrame.Size = UDim2.new(0, 240, 0, 270)
 MainFrame.Active = true
-MainFrame.Draggable = true -- Bisa digeser
+MainFrame.Draggable = true 
 
+-- Corner Frame
 local UICorner = Instance.new("UICorner")
 UICorner.Parent = MainFrame
 
@@ -49,7 +49,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 10, 0, 5)
 Title.Size = UDim2.new(0, 150, 0, 30)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "AUTO BUY V64"
+Title.Text = "AUTO BUY V65"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -78,7 +78,9 @@ InputName.PlaceholderText = "Contoh: Seal"
 InputName.Text = getgenv().SniperConfig.TargetName
 InputName.TextColor3 = Color3.fromRGB(255, 255, 0)
 InputName.TextSize = 14
-InputName.UICorner = Instance.new("UICorner")
+-- FIX BUG DISINI:
+local corner1 = Instance.new("UICorner")
+corner1.Parent = InputName
 
 -- Label Harga
 local Label2 = Label1:Clone()
@@ -98,28 +100,31 @@ InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice)
 -- Tombol START/STOP
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = MainFrame
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Merah Awal
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 ToggleBtn.Position = UDim2.new(0, 10, 0, 200)
 ToggleBtn.Size = UDim2.new(1, -20, 0, 50)
 ToggleBtn.Font = Enum.Font.GothamBlack
 ToggleBtn.Text = "START SNIPER"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 20
-ToggleBtn.UICorner = Instance.new("UICorner")
+-- FIX BUG DISINI:
+local cornerBtn = Instance.new("UICorner")
+cornerBtn.Parent = ToggleBtn
 
--- Tombol CLOSE [X] (Baru)
+-- Tombol CLOSE [X]
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = MainFrame
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50) -- Merah Terang
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 CloseBtn.Position = UDim2.new(1, -35, 0, 5)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Font = Enum.Font.GothamBlack
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.TextSize = 16
-CloseBtn.UICorner = Instance.new("UICorner")
+local cornerClose = Instance.new("UICorner")
+cornerClose.Parent = CloseBtn
 
--- Tombol MINIMIZE [-] (Digeser ke kiri dikit)
+-- Tombol MINIMIZE [-]
 local MinBtn = Instance.new("TextButton")
 MinBtn.Parent = MainFrame
 MinBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -129,9 +134,10 @@ MinBtn.Font = Enum.Font.GothamBlack
 MinBtn.Text = "-"
 MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinBtn.TextSize = 16
-MinBtn.UICorner = Instance.new("UICorner")
+local cornerMin = Instance.new("UICorner")
+cornerMin.Parent = MinBtn
 
--- Tombol RESTORE (Muncul saat diminimize)
+-- Tombol RESTORE [UI]
 local RestoreBtn = Instance.new("TextButton")
 RestoreBtn.Parent = ScreenGui
 RestoreBtn.Name = "RestoreButton"
@@ -141,12 +147,12 @@ RestoreBtn.Size = UDim2.new(0, 45, 0, 45)
 RestoreBtn.Font = Enum.Font.GothamBold
 RestoreBtn.Text = "UI"
 RestoreBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-RestoreBtn.Visible = false -- Sembunyi dulu
-RestoreBtn.UICorner = Instance.new("UICorner")
+RestoreBtn.Visible = false
+local cornerRes = Instance.new("UICorner")
+cornerRes.Parent = RestoreBtn
 
 -- === 2. LOGIKA GUI ===
 
--- Update Config Realtime
 InputName.FocusLost:Connect(function()
     getgenv().SniperConfig.TargetName = InputName.Text
 end)
@@ -156,44 +162,36 @@ InputPrice.FocusLost:Connect(function()
     if num then getgenv().SniperConfig.MaxPrice = num end
 end)
 
--- Fungsi Toggle Start/Stop
 ToggleBtn.MouseButton1Click:Connect(function()
     getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running
-    
     if getgenv().SniperConfig.Running then
         ToggleBtn.Text = "RUNNING..."
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50) -- Hijau
-        -- Update nilai terakhir
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
         getgenv().SniperConfig.TargetName = InputName.Text
         getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 25000
     else
         ToggleBtn.Text = "START SNIPER"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Merah
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     end
 end)
 
--- Fungsi Minimize [-]
 MinBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
     RestoreBtn.Visible = true
 end)
 
--- Fungsi Restore [UI]
 RestoreBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = true
     RestoreBtn.Visible = false
 end)
 
--- Fungsi Close [X] -> MATIKAN BOT
 CloseBtn.MouseButton1Click:Connect(function()
-    getgenv().SniperConfig.Running = false -- Matikan loop sniper
-    ScreenGui:Destroy() -- Hapus GUI
-    print("🛑 GUI DITUTUP. BOT DIMATIKAN.")
+    getgenv().SniperConfig.Running = false
+    ScreenGui:Destroy()
 end)
 
--- === 3. LOGIKA BACKEND (RELATIONAL SNIPER) ===
+-- === 3. LOGIKA BACKEND (V62 RELATIONAL) ===
 
--- Akses Controller
 local BoothController = nil
 pcall(function()
     BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController)
@@ -212,24 +210,17 @@ local function processBoothData(player, data)
     local budget = getgenv().SniperConfig.MaxPrice
     
     for listingUUID, info in pairs(data.Listings) do
-        -- Cek Harga
         if info.Price and info.Price <= budget then
             local linkID = info.ItemId
-            
-            -- Cek Item
             if linkID and data.Items[linkID] then
                 local itemData = data.Items[linkID]
                 
-                -- Ambil Nama (Support PetType & PetData)
                 local petName = itemData.PetType
                 if not petName and itemData.PetData then petName = itemData.PetData.PetType end
                 
-                -- CEK KECOCOKAN
                 if petName == target then
                     if player ~= LocalPlayer then
-                        print("💎 SNIPED! " .. petName .. " | Harga: " .. info.Price)
-                        
-                        -- Eksekusi
+                        print("💎 GUI SNIPED! " .. petName .. " | Harga: " .. info.Price)
                         if BuyController and BuyController.BuyItem then
                             BuyController:BuyItem(player, listingUUID)
                         else
@@ -242,10 +233,8 @@ local function processBoothData(player, data)
     end
 end
 
--- Loop Utama (Aman & Ringan)
 task.spawn(function()
     while true do
-        -- Hanya scan jika tombol START ditekan & GUI masih ada
         if getgenv().SniperConfig.Running and ScreenGui.Parent then
             pcall(function()
                 if BoothController then
@@ -264,4 +253,4 @@ task.spawn(function()
     end
 end)
 
-print("✅ GUI V64 LOADED (Tombol Close Ditambahkan)")
+print("✅ GUI V65 LOADED (FIXED)")
