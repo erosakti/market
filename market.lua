@@ -1,9 +1,10 @@
 --[[ 
-    🏆 AUTO BUY V66 - GUI MANUAL MODE (ANTI-CRASH)
+    🏆 AUTO BUY V67 - MINI GUI EDITION
     
-    Fix Spesifik untuk HP:
-    - Menghapus fungsi ':Clone()' yang bikin script kamu macet di tengah.
-    - Semua tombol ditulis manual (Instance.new) agar 100% muncul.
+    Fitur:
+    - Ukuran GUI jauh lebih kecil (Compact Mode).
+    - Tetap menggunakan metode "Manual Instance" (Anti-Crash).
+    - Tombol Close (X) & Minimize (-) tetap ada.
 ]]
 
 -- === GLOBAL SETTINGS ===
@@ -24,7 +25,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- === 1. MEMBUAT GUI (MANUAL START) ===
+-- === 1. MEMBUAT GUI MINI (MANUAL START) ===
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "SealSniperUI"
 ScreenGui.Parent = CoreGui
@@ -34,125 +35,134 @@ MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 240, 0, 280) -- Sedikit lebih panjang
+MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0) -- Posisi agak ke kiri
+MainFrame.Size = UDim2.new(0, 180, 0, 210) -- UKURAN MINI
 MainFrame.Active = true
 MainFrame.Draggable = true 
 
 local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
--- JUDUL
+-- JUDUL (Lebih Kecil)
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 10, 0, 5)
-Title.Size = UDim2.new(0, 150, 0, 30)
+Title.Position = UDim2.new(0, 8, 0, 5)
+Title.Size = UDim2.new(0, 100, 0, 25)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "AUTO BUY V66"
+Title.Text = "BOT V67 (MINI)"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 18
+Title.TextSize = 14 -- Font diperkecil
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- LABEL NAMA
 local Label1 = Instance.new("TextLabel")
 Label1.Parent = MainFrame
 Label1.BackgroundTransparency = 1
-Label1.Position = UDim2.new(0, 10, 0, 45)
-Label1.Size = UDim2.new(1, -20, 0, 20)
+Label1.Position = UDim2.new(0, 8, 0, 35)
+Label1.Size = UDim2.new(1, -16, 0, 15)
 Label1.Font = Enum.Font.Gotham
-Label1.Text = "Nama Item (Case Sensitive):"
+Label1.Text = "Nama Item:"
 Label1.TextColor3 = Color3.fromRGB(200, 200, 200)
+Label1.TextSize = 11 -- Font diperkecil
 Label1.TextXAlignment = Enum.TextXAlignment.Left
 
--- INPUT NAMA
+-- INPUT NAMA (Lebih Pendek)
 local InputName = Instance.new("TextBox")
 InputName.Parent = MainFrame
 InputName.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-InputName.Position = UDim2.new(0, 10, 0, 70)
-InputName.Size = UDim2.new(1, -20, 0, 35)
+InputName.Position = UDim2.new(0, 8, 0, 52)
+InputName.Size = UDim2.new(1, -16, 0, 28) -- Tinggi dikurangi
 InputName.Font = Enum.Font.GothamBold
-InputName.PlaceholderText = "Contoh: Seal"
+InputName.PlaceholderText = "Seal"
 InputName.Text = getgenv().SniperConfig.TargetName
 InputName.TextColor3 = Color3.fromRGB(255, 255, 0)
-InputName.TextSize = 14
+InputName.TextSize = 12
 local cornerName = Instance.new("UICorner")
+cornerName.CornerRadius = UDim.new(0, 6)
 cornerName.Parent = InputName
 
--- LABEL HARGA (DIBUAT MANUAL, TIDAK CLONE)
+-- LABEL HARGA
 local Label2 = Instance.new("TextLabel")
 Label2.Parent = MainFrame
 Label2.BackgroundTransparency = 1
-Label2.Position = UDim2.new(0, 10, 0, 115)
-Label2.Size = UDim2.new(1, -20, 0, 20)
+Label2.Position = UDim2.new(0, 8, 0, 85)
+Label2.Size = UDim2.new(1, -16, 0, 15)
 Label2.Font = Enum.Font.Gotham
-Label2.Text = "Harga Maksimal:"
+Label2.Text = "Max Harga:"
 Label2.TextColor3 = Color3.fromRGB(200, 200, 200)
+Label2.TextSize = 11
 Label2.TextXAlignment = Enum.TextXAlignment.Left
 
--- INPUT HARGA (DIBUAT MANUAL, TIDAK CLONE)
+-- INPUT HARGA
 local InputPrice = Instance.new("TextBox")
 InputPrice.Parent = MainFrame
 InputPrice.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-InputPrice.Position = UDim2.new(0, 10, 0, 140)
-InputPrice.Size = UDim2.new(1, -20, 0, 35)
+InputPrice.Position = UDim2.new(0, 8, 0, 102)
+InputPrice.Size = UDim2.new(1, -16, 0, 28)
 InputPrice.Font = Enum.Font.GothamBold
-InputPrice.PlaceholderText = "Contoh: 25000"
+InputPrice.PlaceholderText = "25000"
 InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice)
 InputPrice.TextColor3 = Color3.fromRGB(255, 255, 0)
-InputPrice.TextSize = 14
+InputPrice.TextSize = 12
 local cornerPrice = Instance.new("UICorner")
+cornerPrice.CornerRadius = UDim.new(0, 6)
 cornerPrice.Parent = InputPrice
 
--- TOMBOL START
+-- TOMBOL START (Lebih Compact)
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = MainFrame
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-ToggleBtn.Position = UDim2.new(0, 10, 0, 200)
-ToggleBtn.Size = UDim2.new(1, -20, 0, 50)
+ToggleBtn.Position = UDim2.new(0, 8, 0, 150) -- Naik ke atas
+ToggleBtn.Size = UDim2.new(1, -16, 0, 40) -- Tinggi 40px
 ToggleBtn.Font = Enum.Font.GothamBlack
-ToggleBtn.Text = "START SNIPER"
+ToggleBtn.Text = "START"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.TextSize = 20
+ToggleBtn.TextSize = 16
 local cornerBtn = Instance.new("UICorner")
+cornerBtn.CornerRadius = UDim.new(0, 6)
 cornerBtn.Parent = ToggleBtn
 
--- TOMBOL CLOSE X
+-- TOMBOL CLOSE X (Kecil Pojok)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = MainFrame
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-CloseBtn.Position = UDim2.new(1, -35, 0, 5)
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -28, 0, 5)
+CloseBtn.Size = UDim2.new(0, 23, 0, 23) -- Ukuran 23x23
 CloseBtn.Font = Enum.Font.GothamBlack
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 16
+CloseBtn.TextSize = 12
 local cornerClose = Instance.new("UICorner")
+cornerClose.CornerRadius = UDim.new(0, 4)
 cornerClose.Parent = CloseBtn
 
--- TOMBOL MINIMIZE -
+-- TOMBOL MINIMIZE - (Kecil Pojok)
 local MinBtn = Instance.new("TextButton")
 MinBtn.Parent = MainFrame
 MinBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-MinBtn.Position = UDim2.new(1, -70, 0, 5)
-MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -55, 0, 5)
+MinBtn.Size = UDim2.new(0, 23, 0, 23)
 MinBtn.Font = Enum.Font.GothamBlack
 MinBtn.Text = "-"
 MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinBtn.TextSize = 16
+MinBtn.TextSize = 12
 local cornerMin = Instance.new("UICorner")
+cornerMin.CornerRadius = UDim.new(0, 4)
 cornerMin.Parent = MinBtn
 
--- TOMBOL RESTORE
+-- TOMBOL RESTORE (Kecil Biru)
 local RestoreBtn = Instance.new("TextButton")
 RestoreBtn.Parent = ScreenGui
 RestoreBtn.Name = "RestoreButton"
 RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-RestoreBtn.Position = UDim2.new(0.9, -10, 0.2, 0)
-RestoreBtn.Size = UDim2.new(0, 45, 0, 45)
+RestoreBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
+RestoreBtn.Size = UDim2.new(0, 35, 0, 35) -- Kecil
 RestoreBtn.Font = Enum.Font.GothamBold
 RestoreBtn.Text = "UI"
 RestoreBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RestoreBtn.TextSize = 12
 RestoreBtn.Visible = false
 local cornerRes = Instance.new("UICorner")
 cornerRes.Parent = RestoreBtn
@@ -176,7 +186,7 @@ ToggleBtn.MouseButton1Click:Connect(function()
         getgenv().SniperConfig.TargetName = InputName.Text
         getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 25000
     else
-        ToggleBtn.Text = "START SNIPER"
+        ToggleBtn.Text = "START"
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     end
 end)
@@ -196,7 +206,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- === 3. LOGIKA BACKEND (V62 RELATIONAL) ===
+-- === 3. LOGIKA BACKEND (SAMA SEPERTI V62/V66) ===
 
 local BoothController = nil
 pcall(function()
@@ -226,7 +236,7 @@ local function processBoothData(player, data)
                 
                 if petName == target then
                     if player ~= LocalPlayer then
-                        print("💎 GUI SNIPED! " .. petName .. " | Harga: " .. info.Price)
+                        print("💎 MINI SNIPER! " .. petName .. " | Harga: " .. info.Price)
                         if BuyController and BuyController.BuyItem then
                             BuyController:BuyItem(player, listingUUID)
                         else
@@ -259,4 +269,4 @@ task.spawn(function()
     end
 end)
 
-print("✅ GUI V66 LOADED (MANUAL MODE)")
+print("✅ GUI V67 (MINI) LOADED")
