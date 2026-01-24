@@ -1,244 +1,267 @@
 --[[ 
-    AUTO BUY V12 - PLAYERGUI EDITION (FIX HITAM)
-    Solusi: Memindahkan GUI ke PlayerGui agar render sempurna di HP/Delta.
-    Fitur: ResetOnSpawn = false (Agar GUI tidak hilang saat mati).
+    🏆 AUTO BUY V64 - GUI COMPLETE EDITION
+    Fitur: 
+    - Universal Sniper (Ketik nama pet apa saja).
+    - Tombol CLOSE [X] untuk mematikan script total.
+    - Tombol MINIMIZE [-] untuk menyembunyikan GUI.
 ]]
 
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
-
--- 1. BERSIHKAN GUI LAMA
-if PlayerGui:FindFirstChild("AutoBuyV12") then PlayerGui.AutoBuyV12:Destroy() end
-
--- 2. SETUP VARIABEL
-getgenv().Config = {
-    Target = "Seal",
-    MaxPrice = 10000,
-    Running = false
+-- === GLOBAL SETTINGS ===
+getgenv().SniperConfig = {
+    Running = false,
+    TargetName = "Seal", -- Default Target
+    MaxPrice = 25000,    -- Default Budget
+    Delay = 0.5          -- Kecepatan Scan
 }
 
-local BuyRemote = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("TradeEvents"):WaitForChild("Booths"):WaitForChild("BuyListing")
+-- Hapus GUI lama jika ada (Biar gak numpuk)
+if game.CoreGui:FindFirstChild("SealSniperUI") then
+    game.CoreGui.SealSniperUI:Destroy()
+end
 
--- 3. BIKIN GUI DI PLAYERGUI (DIJAMIN MUNCUL)
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+-- === 1. MEMBUAT GUI ===
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "AutoBuyV12"
-ScreenGui.Parent = PlayerGui
-ScreenGui.ResetOnSpawn = false -- [PENTING] Biar gak ilang pas mati
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Name = "SealSniperUI"
+ScreenGui.Parent = CoreGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30) -- Hitam
-MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 240, 0, 320)
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 240, 0, 270) -- Lebar sedikit ditambah
 MainFrame.Active = true
 MainFrame.Draggable = true -- Bisa digeser
-MainFrame.BorderSizePixel = 0
 
--- Hiasan Garis Pinggir (Biar Kelihatan Kalau Hitam)
-local Stroke = Instance.new("UIStroke")
-Stroke.Parent = MainFrame
-Stroke.Color = Color3.fromRGB(0, 150, 255)
-Stroke.Thickness = 2
+local UICorner = Instance.new("UICorner")
+UICorner.Parent = MainFrame
 
 -- Judul
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 10, 0, 5)
+Title.Size = UDim2.new(0, 150, 0, 30)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "  BOT AUTO BUY (V12)"
-Title.TextColor3 = Color3.WHITE
+Title.Text = "AUTO BUY V64"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- FUNGSI MEMBUAT TOMBOL CEPAT
-local function createText(y, txt)
-    local l = Instance.new("TextLabel")
-    l.Parent = MainFrame
-    l.Position = UDim2.new(0, 10, 0, y)
-    l.Size = UDim2.new(0, 220, 0, 20)
-    l.BackgroundTransparency = 1
-    l.Text = txt
-    l.TextColor3 = Color3.fromRGB(200, 200, 200)
-    l.Font = Enum.Font.SourceSansBold
-    l.TextXAlignment = Enum.TextXAlignment.Left
-    return l
-end
+-- === INPUT FIELDS ===
 
-local function createInput(y, def, cb)
-    local b = Instance.new("TextBox")
-    b.Parent = MainFrame
-    b.Position = UDim2.new(0, 10, 0, y)
-    b.Size = UDim2.new(0, 220, 0, 30)
-    b.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    b.TextColor3 = Color3.WHITE
-    b.Text = def
-    b.Font = Enum.Font.SourceSansBold
-    b.TextSize = 16
-    b.FocusLost:Connect(function() cb(b.Text) end)
-    return b
-end
+-- Label Nama
+local Label1 = Instance.new("TextLabel")
+Label1.Parent = MainFrame
+Label1.BackgroundTransparency = 1
+Label1.Position = UDim2.new(0, 10, 0, 45)
+Label1.Size = UDim2.new(1, -20, 0, 20)
+Label1.Font = Enum.Font.Gotham
+Label1.Text = "Nama Item (Case Sensitive):"
+Label1.TextColor3 = Color3.fromRGB(200, 200, 200)
+Label1.TextXAlignment = Enum.TextXAlignment.Left
 
--- ISI ELEMENT (URUTAN PENTING)
-createText(45, "Nama Item (Case Sensitive):")
-createInput(65, "Seal", function(v) getgenv().Config.Target = v end)
+-- Input Nama
+local InputName = Instance.new("TextBox")
+InputName.Parent = MainFrame
+InputName.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+InputName.Position = UDim2.new(0, 10, 0, 70)
+InputName.Size = UDim2.new(1, -20, 0, 35)
+InputName.Font = Enum.Font.GothamBold
+InputName.PlaceholderText = "Contoh: Seal"
+InputName.Text = getgenv().SniperConfig.TargetName
+InputName.TextColor3 = Color3.fromRGB(255, 255, 0)
+InputName.TextSize = 14
+InputName.UICorner = Instance.new("UICorner")
 
-createText(105, "Harga Maksimal:")
-createInput(125, "10000", function(v) getgenv().Config.MaxPrice = tonumber(v) or 10000 end)
+-- Label Harga
+local Label2 = Label1:Clone()
+Label2.Parent = MainFrame
+Label2.Position = UDim2.new(0, 10, 0, 115)
+Label2.Text = "Harga Maksimal:"
 
-local ScanInfo = createText(165, "Status: Menunggu...")
-ScanInfo.TextColor3 = Color3.fromRGB(255, 255, 0)
-ScanInfo.Font = Enum.Font.Code
+-- Input Harga
+local InputPrice = InputName:Clone()
+InputPrice.Parent = MainFrame
+InputPrice.Position = UDim2.new(0, 10, 0, 140)
+InputPrice.PlaceholderText = "Contoh: 25000"
+InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice)
 
--- TOMBOL ON/OFF
+-- === TOMBOL KONTROL ===
+
+-- Tombol START/STOP
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = MainFrame
-ToggleBtn.Position = UDim2.new(0, 10, 0, 195)
-ToggleBtn.Size = UDim2.new(0, 220, 0, 45)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-ToggleBtn.Text = "BOT: MATI"
-ToggleBtn.TextColor3 = Color3.WHITE
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Merah Awal
+ToggleBtn.Position = UDim2.new(0, 10, 0, 200)
+ToggleBtn.Size = UDim2.new(1, -20, 0, 50)
 ToggleBtn.Font = Enum.Font.GothamBlack
+ToggleBtn.Text = "START SNIPER"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 20
+ToggleBtn.UICorner = Instance.new("UICorner")
 
-local StatusLog = Instance.new("TextLabel")
-StatusLog.Parent = MainFrame
-StatusLog.Position = UDim2.new(0, 10, 0, 250)
-StatusLog.Size = UDim2.new(0, 220, 0, 60)
-StatusLog.BackgroundTransparency = 1
-StatusLog.Text = "Siap."
-StatusLog.TextColor3 = Color3.fromRGB(150, 150, 150)
-StatusLog.TextSize = 12
-StatusLog.TextWrapped = true
-StatusLog.TextYAlignment = Enum.TextYAlignment.Top
-
--- TOMBOL MINIMIZE & CLOSE
+-- Tombol CLOSE [X] (Baru)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = MainFrame
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.Position = UDim2.new(0.85, 0, 0, 0)
-CloseBtn.Size = UDim2.new(0, 35, 0, 35)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50) -- Merah Terang
+CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Font = Enum.Font.GothamBlack
 CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.WHITE
-CloseBtn.TextSize = 18
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 16
+CloseBtn.UICorner = Instance.new("UICorner")
 
-local MiniBtn = Instance.new("TextButton")
-MiniBtn.Parent = MainFrame
-MiniBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-MiniBtn.Position = UDim2.new(0.70, 0, 0, 0)
-MiniBtn.Size = UDim2.new(0, 35, 0, 35)
-MiniBtn.Text = "_"
-MiniBtn.TextColor3 = Color3.WHITE
-MiniBtn.TextSize = 20
+-- Tombol MINIMIZE [-] (Digeser ke kiri dikit)
+local MinBtn = Instance.new("TextButton")
+MinBtn.Parent = MainFrame
+MinBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+MinBtn.Position = UDim2.new(1, -70, 0, 5)
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Font = Enum.Font.GothamBlack
+MinBtn.Text = "-"
+MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinBtn.TextSize = 16
+MinBtn.UICorner = Instance.new("UICorner")
 
--- LOGIKA GUI
-CloseBtn.MouseButton1Click:Connect(function()
-    getgenv().Config.Running = false
-    ScreenGui:Destroy()
+-- Tombol RESTORE (Muncul saat diminimize)
+local RestoreBtn = Instance.new("TextButton")
+RestoreBtn.Parent = ScreenGui
+RestoreBtn.Name = "RestoreButton"
+RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+RestoreBtn.Position = UDim2.new(0.9, -10, 0.2, 0)
+RestoreBtn.Size = UDim2.new(0, 45, 0, 45)
+RestoreBtn.Font = Enum.Font.GothamBold
+RestoreBtn.Text = "UI"
+RestoreBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RestoreBtn.Visible = false -- Sembunyi dulu
+RestoreBtn.UICorner = Instance.new("UICorner")
+
+-- === 2. LOGIKA GUI ===
+
+-- Update Config Realtime
+InputName.FocusLost:Connect(function()
+    getgenv().SniperConfig.TargetName = InputName.Text
 end)
 
-local isMin = false
-MiniBtn.MouseButton1Click:Connect(function()
-    isMin = not isMin
-    if isMin then
-        MainFrame:TweenSize(UDim2.new(0, 240, 0, 35), "Out", "Quad", 0.3, true)
-    else
-        MainFrame:TweenSize(UDim2.new(0, 240, 0, 320), "Out", "Quad", 0.3, true)
-    end
+InputPrice.FocusLost:Connect(function()
+    local num = tonumber(InputPrice.Text)
+    if num then getgenv().SniperConfig.MaxPrice = num end
 end)
 
+-- Fungsi Toggle Start/Stop
 ToggleBtn.MouseButton1Click:Connect(function()
-    getgenv().Config.Running = not getgenv().Config.Running
-    if getgenv().Config.Running then
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 100)
-        ToggleBtn.Text = "BOT: AKTIF"
+    getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running
+    
+    if getgenv().SniperConfig.Running then
+        ToggleBtn.Text = "RUNNING..."
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50) -- Hijau
+        -- Update nilai terakhir
+        getgenv().SniperConfig.TargetName = InputName.Text
+        getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 25000
     else
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-        ToggleBtn.Text = "BOT: MATI"
+        ToggleBtn.Text = "START SNIPER"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Merah
     end
 end)
 
--- LOGIKA SCANNER (BACKEND)
-local function getPrice(booth)
-    local prices = {}
-    for _, d in pairs(booth:GetDescendants()) do
-        if d.Name == "Amount" and d:IsA("TextLabel") then
-            local clean = d.Text:gsub(",", "")
-            local num = tonumber(clean)
-            if num then table.insert(prices, num) end
+-- Fungsi Minimize [-]
+MinBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    RestoreBtn.Visible = true
+end)
+
+-- Fungsi Restore [UI]
+RestoreBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    RestoreBtn.Visible = false
+end)
+
+-- Fungsi Close [X] -> MATIKAN BOT
+CloseBtn.MouseButton1Click:Connect(function()
+    getgenv().SniperConfig.Running = false -- Matikan loop sniper
+    ScreenGui:Destroy() -- Hapus GUI
+    print("🛑 GUI DITUTUP. BOT DIMATIKAN.")
+end)
+
+-- === 3. LOGIKA BACKEND (RELATIONAL SNIPER) ===
+
+-- Akses Controller
+local BoothController = nil
+pcall(function()
+    BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController)
+end)
+
+local BuyController = nil
+pcall(function()
+    BuyController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController)
+end)
+
+local function processBoothData(player, data)
+    if not getgenv().SniperConfig.Running then return end
+    if not data.Listings or not data.Items then return end
+    
+    local target = getgenv().SniperConfig.TargetName
+    local budget = getgenv().SniperConfig.MaxPrice
+    
+    for listingUUID, info in pairs(data.Listings) do
+        -- Cek Harga
+        if info.Price and info.Price <= budget then
+            local linkID = info.ItemId
+            
+            -- Cek Item
+            if linkID and data.Items[linkID] then
+                local itemData = data.Items[linkID]
+                
+                -- Ambil Nama (Support PetType & PetData)
+                local petName = itemData.PetType
+                if not petName and itemData.PetData then petName = itemData.PetData.PetType end
+                
+                -- CEK KECOCOKAN
+                if petName == target then
+                    if player ~= LocalPlayer then
+                        print("💎 SNIPED! " .. petName .. " | Harga: " .. info.Price)
+                        
+                        -- Eksekusi
+                        if BuyController and BuyController.BuyItem then
+                            BuyController:BuyItem(player, listingUUID)
+                        else
+                            ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(player, listingUUID)
+                        end
+                    end
+                end
+            end
         end
     end
-    table.sort(prices)
-    return prices[1] or 999999999
 end
 
-local function getOwner(booth)
-    for _, d in pairs(booth:GetDescendants()) do
-        if d:IsA("TextLabel") then
-            local u = d.Text:match("@(.-)'s Booth")
-            if u then return Players:FindFirstChild(u) end
-        end
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        for _, d in pairs(booth:GetDescendants()) do
-            if d:IsA("TextLabel") and d.Text:find(plr.Name) then return plr end
-        end
-    end
-    return nil
-end
-
+-- Loop Utama (Aman & Ringan)
 task.spawn(function()
     while true do
-        task.wait(0.5)
-        if getgenv().Config.Running then
+        -- Hanya scan jika tombol START ditekan & GUI masih ada
+        if getgenv().SniperConfig.Running and ScreenGui.Parent then
             pcall(function()
-                local Booths = Workspace.TradeWorld.Booths:GetChildren()
-                local items = 0
-                local booths = 0
-                
-                for _, booth in pairs(Booths) do
-                    local dynamic = booth:FindFirstChild("DynamicInstances")
-                    if dynamic and #dynamic:GetChildren() > 0 then
-                        booths = booths + 1
-                        for _, item in pairs(dynamic:GetChildren()) do
-                            items = items + 1
-                            local name = nil
-                            if item:FindFirstChild("Item_String") then name = item.Item_String.Value end
-                            if not name and item:FindFirstChild("PetType") then name = item.PetType.Value end
-                            
-                            -- Deep Scan
-                            if not name then
-                                for _, v in pairs(item:GetChildren()) do
-                                    if v:IsA("StringValue") and (v.Name == "PetType" or v.Name == "Item_String") then
-                                        name = v.Value; break
-                                    end
-                                end
-                            end
-
-                            if name == getgenv().Config.Target then
-                                local price = getPrice(booth)
-                                if price <= getgenv().Config.MaxPrice then
-                                    local owner = getOwner(booth)
-                                    if owner and owner ~= Players.LocalPlayer then
-                                        StatusLog.Text = "BELI: " .. name .. " ("..owner.Name..")"
-                                        StatusLog.TextColor3 = Color3.fromRGB(0, 255, 0)
-                                        BuyRemote:InvokeServer(owner, item.Name)
-                                        task.wait(2)
-                                    end
-                                end
+                if BoothController then
+                    for _, player in pairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer then
+                            local boothData = BoothController:GetPlayerBoothData(player)
+                            if boothData then
+                                processBoothData(player, boothData)
                             end
                         end
                     end
                 end
-                
-                ScanInfo.Text = "Scan: " .. booths .. " Booth / " .. items .. " Item"
-                if booths == 0 then StatusLog.Text = "Toko tidak terlihat (Kejauhan)" end
             end)
         end
+        task.wait(getgenv().SniperConfig.Delay)
     end
 end)
+
+print("✅ GUI V64 LOADED (Tombol Close Ditambahkan)")
