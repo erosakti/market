@@ -1,15 +1,16 @@
 --[[ 
-    📡 AUTO BUY V86 - WEBHOOK EDITION
+    🚀 AUTO BUY V87 - TELEPORT FIX
     
-    Fitur Baru:
-    - DISCORD WEBHOOK: Mengirim notifikasi saat item DITEMUKAN (Just Find) atau DIBELI (Auto Buy).
-    - FULL GUI CONTROL: Semua settingan ada di layar.
+    Perbaikan:
+    - Menambahkan fungsi "ForceTeleport".
+    - Jika gagal TP ke Booth, dia akan TP ke Kepala Penjualnya langsung.
+    - Memastikan kamu sampai di depan target.
 ]]
 
 -- ==========================================================
--- 👇 ISI LINK DISCORD WEBHOOK KAMU DISINI 👇
+-- 👇 ISI LINK DISCORD WEBHOOK (OPSIONAL) 👇
 -- ==========================================================
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1456120032953110629/iPI8P3288dmCbbrdEHYvYErXrrBkkW2JrI2acnowKqLbu-fTGFJZUx0NfJ_6TLKS1vS5" -- Contoh: "https://discord.com/api/webhooks/..."
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1456120032953110629/iPI8P3288dmCbbrdEHYvYErXrrBkkW2JrI2acnowKqLbu-fTGFJZUx0NfJ_6TLKS1vS5" 
 -- ==========================================================
 
 local OWNER_IDS = { 9169453437 } -- Ganti ID Kamu
@@ -44,12 +45,34 @@ getgenv().SniperConfig = {
     MaxPrice = 10000,
     HopDelay = 4,
     AutoHop = true,
-    JustFind = true -- Default Just Find (Aman buat trader)
+    JustFind = true 
 }
 local ScriptAlive = true
 
 if game.CoreGui:FindFirstChild("SealSniperUI") then game.CoreGui.SealSniperUI:Destroy() end
 if game.CoreGui:FindFirstChild("AFKSaverUI") then game.CoreGui.AFKSaverUI:Destroy() end
+
+-- === FUNGSI TELEPORT KUAT (BARU) ===
+local function ForceTeleport(targetPlayer, boothController)
+    -- Cara 1: Pakai Controller Game
+    pcall(function()
+        if boothController and boothController.TeleportToBooth then
+            boothController:TeleportToBooth(targetPlayer)
+        end
+    end)
+    
+    task.wait(0.5) -- Jeda sebentar
+    
+    -- Cara 2: Teleport Manual ke Karakter Penjual (Backup Paling Ampuh)
+    pcall(function()
+        if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                -- Teleport ke atas kepala penjual sedikit biar gak nyangkut
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 2)
+            end
+        end
+    end)
+end
 
 -- === FUNGSI WEBHOOK ===
 local function SendWebhook(itemName, price, sellerName, actionType)
@@ -57,8 +80,8 @@ local function SendWebhook(itemName, price, sellerName, actionType)
     
     local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
     if request then
-        local color = 65280 -- Hijau (Beli)
-        if actionType == "FOUND (JUST FIND)" then color = 16776960 end -- Kuning (Ketemu)
+        local color = 65280 
+        if actionType == "FOUND (JUST FIND)" then color = 16776960 end 
 
         local embed = {
             ["title"] = "💎 ITEM NOTIFICATION 💎",
@@ -70,7 +93,7 @@ local function SendWebhook(itemName, price, sellerName, actionType)
                 { ["name"] = "👤 Seller", ["value"] = sellerName, ["inline"] = true },
                 { ["name"] = "📍 Server ID", ["value"] = game.JobId, ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "V86 Sniper Bot" }
+            ["footer"] = { ["text"] = "V87 Teleport Fix" }
         }
         
         request({
@@ -82,7 +105,7 @@ local function SendWebhook(itemName, price, sellerName, actionType)
     end
 end
 
--- Fungsi Helper Lainnya
+-- Helper Functions
 local function ToggleAFK(state)
     if state then
         local S = Instance.new("ScreenGui"); S.Name = "AFKSaverUI"; S.Parent = CoreGui; S.IgnoreGuiInset = true
@@ -132,7 +155,7 @@ local MainFrame = Instance.new("Frame"); MainFrame.Parent = ScreenGui; MainFrame
 MainFrame.Size = UDim2.new(0, 200, 0, 360); 
 MainFrame.Active = true; MainFrame.Draggable = true
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V86 (WEBHOOK)"; Title.TextColor3 = Color3.fromRGB(0, 255, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V87 (TP FIX)"; Title.TextColor3 = Color3.fromRGB(0, 255, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
 
 local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.Text = "Status: IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(200, 200, 200); StatusLbl.Position = UDim2.new(0, 10, 0, 30); StatusLbl.Size = UDim2.new(1, -20, 0, 30); StatusLbl.BackgroundTransparency = 1; StatusLbl.TextWrapped = true; StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -156,7 +179,7 @@ DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n th
 local ModeBtn = Instance.new("TextButton"); ModeBtn.Parent = MainFrame; ModeBtn.Position = UDim2.new(0, 10, 0, 185); ModeBtn.Size = UDim2.new(1, -20, 0, 35); ModeBtn.Font = Enum.Font.GothamBold; ModeBtn.TextSize = 12; Instance.new("UICorner", ModeBtn).CornerRadius = UDim.new(0,6)
 local function UpdateMode()
     if getgenv().SniperConfig.JustFind then
-        ModeBtn.Text = "MODE: JUST FIND (NOTIF ONLY) 🔍"
+        ModeBtn.Text = "MODE: JUST FIND (CARI AJA) 🔍"
         ModeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
     else
         ModeBtn.Text = "MODE: AUTO BUY (BELI) 🛒"
@@ -231,16 +254,18 @@ task.spawn(function()
                                                     StatusLbl.Text = "FOUND: " .. name .. " (" .. p.Name .. ")"
                                                     StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
                                                     
-                                                    if Booths.TeleportToBooth then Booths:TeleportToBooth(p) end
+                                                    -- === 🔥 FORCE TELEPORT HERE 🔥 ===
+                                                    ForceTeleport(p, Booths)
+                                                    -- =================================
                                                     
                                                     if not getgenv().SniperConfig.JustFind then
-                                                        -- MODE: AUTO BUY
+                                                        -- MODE AUTO BUY
                                                         if Buy then Buy:BuyItem(p, id)
                                                         else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(p, id) end
                                                         
                                                         SendWebhook(name, info.Price, p.Name, "BOUGHT (AUTO BUY)")
                                                     else
-                                                        -- MODE: JUST FIND
+                                                        -- MODE JUST FIND
                                                         SendWebhook(name, info.Price, p.Name, "FOUND (JUST FIND)")
                                                     end
                                                 end
@@ -261,7 +286,7 @@ task.spawn(function()
                 ServerHop()
                 task.wait(10)
             elseif Found then
-                -- STOP SCANNING
+                -- STOP SCANNING JIKA KETEMU
                 getgenv().SniperConfig.Running = false 
                 UpdateRun()
             end
