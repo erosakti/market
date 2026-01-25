@@ -1,15 +1,15 @@
 --[[ 
-    👻 AUTO BUY V91 - NO TELEPORT EDITION
+    🛡️ AUTO BUY V92 - SAFE & LEGIT EDITION
     
-    Perubahan:
-    - TELEPORT REMOVED: Karakter diam di tempat, tidak akan pindah ke booth.
-    - REMOTE BUY: Membeli item menggunakan sinyal remote saja.
-    - DEFAULT PRICE: 10 (Aman). Ubah ke 0 untuk Any Price.
-    - LOOPING: Barbar Loop (Cari -> Beli -> Cari lagi).
+    Fitur Keamanan:
+    - HUMANIZE DELAY: Jeda acak sebelum membeli (biar dikira manusia).
+    - REMOTE BUY: Membeli tanpa teleport (Karakter aman diam di tempat).
+    - ANTI-SOFT BAN: Proteksi hop server agar tidak kena limit.
+    - DEFAULT PRICE: 10 (Aman).
 ]]
 
 -- ==========================================================
--- 👇 ISI LINK DISCORD WEBHOOK (OPSIONAL) 👇
+-- 👇 LINK DISCORD WEBHOOK (OPSIONAL) 👇
 -- ==========================================================
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1456120032953110629/iPI8P3288dmCbbrdEHYvYErXrrBkkW2JrI2acnowKqLbu-fTGFJZUx0NfJ_6TLKS1vS5" 
 -- ==========================================================
@@ -43,9 +43,10 @@ end)
 getgenv().SniperConfig = {
     Running = false,
     Targets = {"Seal"},
-    MaxPrice = 10, -- Default 10 (Aman)
+    MaxPrice = 10, 
     HopDelay = 13,
-    AutoHop = true
+    AutoHop = true,
+    SafeMode = true -- Default Nyala (Humanize)
 }
 local ScriptAlive = true
 
@@ -59,16 +60,16 @@ local function SendWebhook(itemName, price, sellerName)
     local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
     if request then
         local embed = {
-            ["title"] = "👻 ITEM BOUGHT (NO TP) 👻",
-            ["description"] = "**Bot masih lanjut mencari...**",
-            ["color"] = 65280, -- Hijau
+            ["title"] = "🛡️ ITEM BOUGHT (SAFE MODE) 🛡️",
+            ["description"] = "**Bot meniru perilaku manusia...**",
+            ["color"] = 65280, 
             ["fields"] = {
                 { ["name"] = "📦 Item Name", ["value"] = itemName, ["inline"] = false },
                 { ["name"] = "💰 Price", ["value"] = tostring(price) .. " Gems", ["inline"] = true },
                 { ["name"] = "👤 Seller", ["value"] = sellerName, ["inline"] = true },
                 { ["name"] = "📍 Server ID", ["value"] = game.JobId, ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "V91 Ghost Buyer" }
+            ["footer"] = { ["text"] = "V92 Legit Edition" }
         }
         
         request({
@@ -105,32 +106,41 @@ local function ParseTargets(text)
 end
 
 local function ServerHop()
-    local req = (syn and syn.request) or (http and http.request) or request
-    if req then
-        local servers = {}
-        local body = HttpService:JSONDecode(req({Url = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"}).Body)
-        if body and body.data then
-            for _, v in next, body.data do
-                if type(v) == "table" and v.playing < v.maxPlayers and v.id ~= game.JobId then
-                    table.insert(servers, v.id)
+    -- Cek koneksi internet dulu biar gak error
+    local success, result = pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or request
+        if req then
+            local servers = {}
+            local body = HttpService:JSONDecode(req({Url = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"}).Body)
+            if body and body.data then
+                for _, v in next, body.data do
+                    if type(v) == "table" and v.playing < v.maxPlayers and v.id ~= game.JobId then
+                        table.insert(servers, v.id)
+                    end
                 end
             end
+            if #servers > 0 then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+            else
+                TeleportService:Teleport(game.PlaceId, LocalPlayer)
+            end
         end
-        if #servers > 0 then
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
-        else
-            TeleportService:Teleport(game.PlaceId, LocalPlayer)
-        end
+    end)
+    
+    if not success then
+        warn("Hop Failed, Retrying...")
+        task.wait(2)
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
     end
 end
 
 -- === GUI BUILDER ===
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
-local MainFrame = Instance.new("Frame"); MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30); MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0); 
-MainFrame.Size = UDim2.new(0, 200, 0, 320); 
+local MainFrame = Instance.new("Frame"); MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 35); MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0); 
+MainFrame.Size = UDim2.new(0, 200, 0, 360); 
 MainFrame.Active = true; MainFrame.Draggable = true
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "SNIPER"; Title.TextColor3 = Color3.fromRGB(0, 255, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V92 (SAFE)"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
 
 local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.Text = "Status: IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(200, 200, 200); StatusLbl.Position = UDim2.new(0, 10, 0, 30); StatusLbl.Size = UDim2.new(1, -20, 0, 30); StatusLbl.BackgroundTransparency = 1; StatusLbl.TextWrapped = true; StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -156,8 +166,16 @@ local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.
 Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0,4)
 DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n then getgenv().SniperConfig.HopDelay = n end end)
 
+-- SAFE MODE BTN (NEW)
+local SafeBtn = Instance.new("TextButton"); SafeBtn.Parent = MainFrame; SafeBtn.Position = UDim2.new(0, 10, 0, 185); SafeBtn.Size = UDim2.new(1, -20, 0, 35); SafeBtn.Font = Enum.Font.GothamBold; SafeBtn.TextSize = 12; Instance.new("UICorner", SafeBtn).CornerRadius = UDim.new(0,6)
+local function UpdateSafe()
+    if getgenv().SniperConfig.SafeMode then SafeBtn.Text = "HUMANIZE: ON (JEDA ACAK) 🛡️"; SafeBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) else SafeBtn.Text = "HUMANIZE: OFF (INSTANT) ⚠️"; SafeBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0) end
+end
+UpdateSafe()
+SafeBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.SafeMode = not getgenv().SniperConfig.SafeMode; UpdateSafe() end)
+
 -- HOP BTN
-local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 10, 0, 185); HopBtn.Size = UDim2.new(1, -20, 0, 35); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 12; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,6)
+local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 10, 0, 225); HopBtn.Size = UDim2.new(1, -20, 0, 35); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 12; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,6)
 local function UpdateHop()
     if getgenv().SniperConfig.AutoHop then HopBtn.Text = "AUTO HOP: ON 🟢"; HopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 50) else HopBtn.Text = "AUTO HOP: OFF 🔴"; HopBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80) end
 end
@@ -165,7 +183,7 @@ UpdateHop()
 HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not getgenv().SniperConfig.AutoHop; UpdateHop() end)
 
 -- START BTN
-local RunBtn = Instance.new("TextButton"); RunBtn.Parent = MainFrame; RunBtn.Position = UDim2.new(0, 10, 0, 230); RunBtn.Size = UDim2.new(1, -20, 0, 45); RunBtn.Font = Enum.Font.GothamBlack; RunBtn.TextSize = 16; Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0,6)
+local RunBtn = Instance.new("TextButton"); RunBtn.Parent = MainFrame; RunBtn.Position = UDim2.new(0, 10, 0, 270); RunBtn.Size = UDim2.new(1, -20, 0, 45); RunBtn.Font = Enum.Font.GothamBlack; RunBtn.TextSize = 16; Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0,6)
 local function UpdateRun()
     ParseTargets(TgtBox.Text)
     local p = tonumber(PriceBox.Text); if p then getgenv().SniperConfig.MaxPrice = p end
@@ -175,7 +193,7 @@ local function UpdateRun()
         RunBtn.Text = "🔥 SCANNING (LOOP) 🔥"; RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         StatusLbl.Text = "Scanning ("..#getgenv().SniperConfig.Targets.." Items)..." 
     else 
-        RunBtn.Text = "START AUTO BUY"; RunBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        RunBtn.Text = "START SAFE SNIPER"; RunBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         StatusLbl.Text = "Status: IDLE" 
     end
 end
@@ -212,13 +230,9 @@ task.spawn(function()
                             if data and data.Listings then
                                 for id, info in pairs(data.Listings) do
                                     
-                                    -- Logic Cek Harga (0 = Any Price)
                                     local priceOk = false
-                                    if getgenv().SniperConfig.MaxPrice == 0 then
-                                        priceOk = true
-                                    elseif info.Price <= getgenv().SniperConfig.MaxPrice then
-                                        priceOk = true
-                                    end
+                                    if getgenv().SniperConfig.MaxPrice == 0 then priceOk = true
+                                    elseif info.Price <= getgenv().SniperConfig.MaxPrice then priceOk = true end
                                     
                                     if priceOk then
                                         local item = data.Items[info.ItemId]
@@ -227,10 +241,17 @@ task.spawn(function()
                                             for _, t in pairs(getgenv().SniperConfig.Targets) do
                                                 if name == t then
                                                     Found = true
-                                                    StatusLbl.Text = "BUYING: " .. name .. " (" .. p.Name .. ")"
+                                                    StatusLbl.Text = "FOUND: " .. name
                                                     StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
                                                     
-                                                    -- AUTO BUY (ALWAYS)
+                                                    -- === SAFETY LOGIC ===
+                                                    if getgenv().SniperConfig.SafeMode then
+                                                        local delayTime = math.random(5, 12) / 10 -- Random 0.5s - 1.2s
+                                                        StatusLbl.Text = "HUMANIZE DELAY: " .. delayTime .. "s"
+                                                        task.wait(delayTime)
+                                                    end
+                                                    -- ====================
+                                                    
                                                     if Buy then Buy:BuyItem(p, id)
                                                     else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(p, id) end
                                                     
@@ -250,12 +271,12 @@ task.spawn(function()
 
             -- LOGIC LOOPING
             if getgenv().SniperConfig.AutoHop then
-                StatusLbl.Text = "Hopping (Looping)..."
+                StatusLbl.Text = "Hopping..."
                 StatusLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
                 ServerHop()
-                task.wait(10)
+                task.wait(10) -- Jeda aman antar server
             else
-                StatusLbl.Text = "Re-scanning (Looping)..."
+                StatusLbl.Text = "Re-scanning..."
                 task.wait(1)
             end
         else
