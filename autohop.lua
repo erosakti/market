@@ -1,10 +1,11 @@
 --[[ 
-    💾 AUTO BUY V93 - MEMORY EDITION (AUTO RESUME)
+    ⚡ AUTO BUY V94 - INSTANT MEMORY EDITION
     
-    Perbaikan Utama:
-    - AUTO SAVE: Skrip menyimpan settingan & status ON/OFF ke file.
-    - AUTO RESUME: Jika status terakhir ON, di server baru langsung JALAN (Looping Lancar).
-    - TETAP AMAN: Membawa fitur Safe Mode & Humanize dari V92.
+    Perubahan:
+    - HUMANIZE REMOVED: Bot membeli SECARA INSTAN (0 delay).
+    - AUTO SAVE/RESUME: Menyimpan settingan & status ON/OFF.
+    - GHOST MODE: Tanpa teleport, diam di tempat.
+    - LOOPING: Barbar Loop aktif.
 ]]
 
 -- ==========================================================
@@ -39,16 +40,15 @@ LocalPlayer.Idled:Connect(function()
 end)
 
 -- === SISTEM PENYIMPANAN DATA (AUTO SAVE) ===
-local FileName = "SealSniper_Config.json"
+local FileName = "SealSniper_Config_V94.json"
 
--- Default Config
+-- Default Config (Tanpa SafeMode)
 getgenv().SniperConfig = {
     Running = false,
     Targets = {"Seal"},
     MaxPrice = 10,
     HopDelay = 13,
-    AutoHop = true,
-    SafeMode = true
+    AutoHop = true
 }
 
 -- Fungsi Load Config
@@ -57,7 +57,6 @@ local function LoadConfig()
         pcall(function()
             local content = readfile(FileName)
             local decoded = HttpService:JSONDecode(content)
-            -- Update config dengan data yang disimpan
             if decoded then
                 for k, v in pairs(decoded) do
                     getgenv().SniperConfig[k] = v
@@ -90,16 +89,16 @@ local function SendWebhook(itemName, price, sellerName)
     local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
     if request then
         local embed = {
-            ["title"] = "💾 ITEM BOUGHT (AUTO RESUME)",
-            ["description"] = "**Bot lanjut looping ke server baru...**",
-            ["color"] = 65280,
+            ["title"] = "⚡ ITEM BOUGHT (INSTANT) ⚡",
+            ["description"] = "**Bot lanjut looping...**",
+            ["color"] = 16711680, -- Merah (Tanda Instant/Barbar)
             ["fields"] = {
                 { ["name"] = "📦 Item Name", ["value"] = itemName, ["inline"] = false },
                 { ["name"] = "💰 Price", ["value"] = tostring(price) .. " Gems", ["inline"] = true },
                 { ["name"] = "👤 Seller", ["value"] = sellerName, ["inline"] = true },
                 { ["name"] = "📍 Server ID", ["value"] = game.JobId, ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "V93 Memory Edition" }
+            ["footer"] = { ["text"] = "V94 Instant Memory" }
         }
         request({Url = WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode({ ["embeds"] = {embed} })})
     end
@@ -127,13 +126,11 @@ local function ParseTargets(text)
         if clean ~= "" then table.insert(list, clean) end
     end
     getgenv().SniperConfig.Targets = list
-    SaveConfig() -- Save setiap ubah target
+    SaveConfig()
 end
 
 local function ServerHop()
-    -- Save dulu status Running=true biar di next server nyala lagi
-    SaveConfig()
-    
+    SaveConfig() -- Save status Running sebelum pindah
     local success, result = pcall(function()
         local req = (syn and syn.request) or (http and http.request) or request
         if req then
@@ -159,10 +156,10 @@ end
 -- === GUI BUILDER ===
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
 local MainFrame = Instance.new("Frame"); MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 35); MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0); 
-MainFrame.Size = UDim2.new(0, 200, 0, 360); 
+MainFrame.Size = UDim2.new(0, 200, 0, 320); -- Diperkecil karena tombol Safe hilang
 MainFrame.Active = true; MainFrame.Draggable = true
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "SNIPER"; Title.TextColor3 = Color3.fromRGB(0, 255, 255); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V94 (INSTANT)"; Title.TextColor3 = Color3.fromRGB(255, 50, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
 
 local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.Text = "Status: IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(200, 200, 200); StatusLbl.Position = UDim2.new(0, 10, 0, 30); StatusLbl.Size = UDim2.new(1, -20, 0, 30); StatusLbl.BackgroundTransparency = 1; StatusLbl.TextWrapped = true; StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -189,16 +186,8 @@ local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.
 Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0,4)
 DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n then getgenv().SniperConfig.HopDelay = n; SaveConfig() end end)
 
--- SAFE BTN
-local SafeBtn = Instance.new("TextButton"); SafeBtn.Parent = MainFrame; SafeBtn.Position = UDim2.new(0, 10, 0, 185); SafeBtn.Size = UDim2.new(1, -20, 0, 35); SafeBtn.Font = Enum.Font.GothamBold; SafeBtn.TextSize = 12; Instance.new("UICorner", SafeBtn).CornerRadius = UDim.new(0,6)
-local function UpdateSafe()
-    if getgenv().SniperConfig.SafeMode then SafeBtn.Text = "HUMANIZE: ON (SAFE) 🛡️"; SafeBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) else SafeBtn.Text = "HUMANIZE: OFF (RISK) ⚠️"; SafeBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0) end
-end
-UpdateSafe()
-SafeBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.SafeMode = not getgenv().SniperConfig.SafeMode; SaveConfig(); UpdateSafe() end)
-
 -- HOP BTN
-local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 10, 0, 225); HopBtn.Size = UDim2.new(1, -20, 0, 35); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 12; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,6)
+local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 10, 0, 185); HopBtn.Size = UDim2.new(1, -20, 0, 35); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 12; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,6)
 local function UpdateHop()
     if getgenv().SniperConfig.AutoHop then HopBtn.Text = "AUTO HOP: ON 🟢"; HopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 50) else HopBtn.Text = "AUTO HOP: OFF 🔴"; HopBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80) end
 end
@@ -206,21 +195,21 @@ UpdateHop()
 HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not getgenv().SniperConfig.AutoHop; SaveConfig(); UpdateHop() end)
 
 -- START BTN
-local RunBtn = Instance.new("TextButton"); RunBtn.Parent = MainFrame; RunBtn.Position = UDim2.new(0, 10, 0, 270); RunBtn.Size = UDim2.new(1, -20, 0, 45); RunBtn.Font = Enum.Font.GothamBlack; RunBtn.TextSize = 16; Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0,6)
+local RunBtn = Instance.new("TextButton"); RunBtn.Parent = MainFrame; RunBtn.Position = UDim2.new(0, 10, 0, 230); RunBtn.Size = UDim2.new(1, -20, 0, 45); RunBtn.Font = Enum.Font.GothamBlack; RunBtn.TextSize = 16; Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0,6)
 local function UpdateRun()
-    ParseTargets(TgtBox.Text) -- Update targets
+    ParseTargets(TgtBox.Text) 
     if getgenv().SniperConfig.Running then 
-        RunBtn.Text = "🔥 SCANNING... 🔥"; RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        RunBtn.Text = "🔥 SCANNING (INSTANT) 🔥"; RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         StatusLbl.Text = "Scanning ("..#getgenv().SniperConfig.Targets.." Items)..." 
     else 
         RunBtn.Text = "START SNIPER"; RunBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         StatusLbl.Text = "Status: IDLE" 
     end
 end
-UpdateRun() -- Init status visual
+UpdateRun() 
 RunBtn.MouseButton1Click:Connect(function() 
     getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running
-    SaveConfig() -- Save status Running (True/False)
+    SaveConfig()
     UpdateRun() 
 end)
 
@@ -264,13 +253,10 @@ task.spawn(function()
                                             for _, t in pairs(getgenv().SniperConfig.Targets) do
                                                 if name == t then
                                                     Found = true
-                                                    StatusLbl.Text = "FOUND: " .. name
+                                                    StatusLbl.Text = "INSTANT BUY: " .. name
                                                     StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
                                                     
-                                                    if getgenv().SniperConfig.SafeMode then
-                                                        task.wait(math.random(5,12)/10)
-                                                    end
-                                                    
+                                                    -- LANGSUNG BELI (NO DELAY)
                                                     if Buy then Buy:BuyItem(p, id)
                                                     else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(p, id) end
                                                     
