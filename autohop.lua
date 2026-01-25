@@ -10,7 +10,7 @@
 -- ==========================================================
 -- 👇 LINK DISCORD WEBHOOK (OPSIONAL) 👇
 -- ==========================================================
-local WEBHOOK_URL = "" 
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1456120032953110629/iPI8P3288dmCbbrdEHYvYErXrrBkkW2JrI2acnowKqLbu-fTGFJZUx0NfJ_6TLKS1vS5" 
 -- ==========================================================
 
 local OWNER_IDS = { 9169453437 } -- Ganti ID Kamu
