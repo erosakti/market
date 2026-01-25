@@ -43,7 +43,7 @@ getgenv().SniperConfig = {
     Running = false,
     Targets = {"Seal"},
     MaxPrice = 0, -- Default 0 (Any Price)
-    HopDelay = 15,
+    HopDelay = 13,
     AutoHop = true,
     JustFind = true 
 }
@@ -172,7 +172,7 @@ PriceBox.FocusLost:Connect(function()
 end)
 
 local DelayLbl = Instance.new("TextLabel"); DelayLbl.Parent = MainFrame; DelayLbl.Text = "Hop Delay (s):"; DelayLbl.TextColor3 = Color3.fromRGB(180,180,180); DelayLbl.Position = UDim2.new(0, 10, 0, 145); DelayLbl.Size = UDim2.new(0, 80, 0, 25); DelayLbl.BackgroundTransparency = 1; DelayLbl.TextXAlignment = Enum.TextXAlignment.Left; DelayLbl.Font = Enum.Font.Gotham
-local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.BackgroundColor3 = Color3.fromRGB(40,40,50); DelayBox.Position = UDim2.new(0, 90, 0, 145); DelayBox.Size = UDim2.new(0, 100, 0, 25); DelayBox.Font = Enum.Font.GothamBold; DelayBox.Text = "4"; DelayBox.TextColor3 = Color3.fromRGB(255,255,0); DelayBox.TextSize = 14
+local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.BackgroundColor3 = Color3.fromRGB(40,40,50); DelayBox.Position = UDim2.new(0, 90, 0, 145); DelayBox.Size = UDim2.new(0, 100, 0, 25); DelayBox.Font = Enum.Font.GothamBold; DelayBox.Text = "13"; DelayBox.TextColor3 = Color3.fromRGB(255,255,0); DelayBox.TextSize = 14
 Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0,4)
 DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n then getgenv().SniperConfig.HopDelay = n end end)
 
