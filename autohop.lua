@@ -41,9 +41,9 @@ end)
 -- Config Default
 getgenv().SniperConfig = {
     Running = false,
-    Targets = {"Rainbow Dilophosaurus"},
-    MaxPrice = 10000,
-    HopDelay = 4,
+    Targets = {"Seal"},
+    MaxPrice = 10,
+    HopDelay = 15,
     AutoHop = true,
     JustFind = true 
 }
