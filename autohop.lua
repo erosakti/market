@@ -161,17 +161,17 @@ local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; Statu
 
 -- INPUTS
 local TgtLbl = Instance.new("TextLabel"); TgtLbl.Parent = MainFrame; TgtLbl.Text = "Nama Pet (Pisah koma):"; TgtLbl.TextColor3 = Color3.fromRGB(180,180,180); TgtLbl.Position = UDim2.new(0, 10, 0, 60); TgtLbl.Size = UDim2.new(1, -20, 0, 20); TgtLbl.BackgroundTransparency = 1; TgtLbl.TextXAlignment = Enum.TextXAlignment.Left; TgtLbl.Font = Enum.Font.Gotham
-local TgtBox = Instance.new("TextBox"); TgtBox.Parent = MainFrame; TgtBox.BackgroundColor3 = Color3.fromRGB(40,40,50); TgtBox.Position = UDim2.new(0, 10, 0, 80); TgtBox.Size = UDim2.new(1, -20, 0, 30); TgtBox.Font = Enum.Font.GothamBold; TgtBox.Text = "Rainbow Dilophosaurus"; TgtBox.TextColor3 = Color3.fromRGB(255,255,0); TgtBox.TextSize = 12; TgtBox.PlaceholderText = "Seal, Hydra"
+local TgtBox = Instance.new("TextBox"); TgtBox.Parent = MainFrame; TgtBox.BackgroundColor3 = Color3.fromRGB(40,40,50); TgtBox.Position = UDim2.new(0, 10, 0, 80); TgtBox.Size = UDim2.new(1, -20, 0, 30); TgtBox.Font = Enum.Font.GothamBold; TgtBox.Text = "Seal"; TgtBox.TextColor3 = Color3.fromRGB(255,255,0); TgtBox.TextSize = 12; TgtBox.PlaceholderText = "Seal, Hydra"
 Instance.new("UICorner", TgtBox).CornerRadius = UDim.new(0,4)
 TgtBox.FocusLost:Connect(function() ParseTargets(TgtBox.Text) end)
 
 local PriceLbl = Instance.new("TextLabel"); PriceLbl.Parent = MainFrame; PriceLbl.Text = "Max Harga:"; PriceLbl.TextColor3 = Color3.fromRGB(180,180,180); PriceLbl.Position = UDim2.new(0, 10, 0, 115); PriceLbl.Size = UDim2.new(0, 80, 0, 25); PriceLbl.BackgroundTransparency = 1; PriceLbl.TextXAlignment = Enum.TextXAlignment.Left; PriceLbl.Font = Enum.Font.Gotham
-local PriceBox = Instance.new("TextBox"); PriceBox.Parent = MainFrame; PriceBox.BackgroundColor3 = Color3.fromRGB(40,40,50); PriceBox.Position = UDim2.new(0, 90, 0, 115); PriceBox.Size = UDim2.new(0, 100, 0, 25); PriceBox.Font = Enum.Font.GothamBold; PriceBox.Text = "10000"; PriceBox.TextColor3 = Color3.fromRGB(255,255,0); PriceBox.TextSize = 14
+local PriceBox = Instance.new("TextBox"); PriceBox.Parent = MainFrame; PriceBox.BackgroundColor3 = Color3.fromRGB(40,40,50); PriceBox.Position = UDim2.new(0, 90, 0, 115); PriceBox.Size = UDim2.new(0, 100, 0, 25); PriceBox.Font = Enum.Font.GothamBold; PriceBox.Text = "10"; PriceBox.TextColor3 = Color3.fromRGB(255,255,0); PriceBox.TextSize = 14
 Instance.new("UICorner", PriceBox).CornerRadius = UDim.new(0,4)
 PriceBox.FocusLost:Connect(function() local n = tonumber(PriceBox.Text); if n then getgenv().SniperConfig.MaxPrice = n end end)
 
 local DelayLbl = Instance.new("TextLabel"); DelayLbl.Parent = MainFrame; DelayLbl.Text = "Hop Delay (s):"; DelayLbl.TextColor3 = Color3.fromRGB(180,180,180); DelayLbl.Position = UDim2.new(0, 10, 0, 145); DelayLbl.Size = UDim2.new(0, 80, 0, 25); DelayLbl.BackgroundTransparency = 1; DelayLbl.TextXAlignment = Enum.TextXAlignment.Left; DelayLbl.Font = Enum.Font.Gotham
-local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.BackgroundColor3 = Color3.fromRGB(40,40,50); DelayBox.Position = UDim2.new(0, 90, 0, 145); DelayBox.Size = UDim2.new(0, 100, 0, 25); DelayBox.Font = Enum.Font.GothamBold; DelayBox.Text = "4"; DelayBox.TextColor3 = Color3.fromRGB(255,255,0); DelayBox.TextSize = 14
+local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.BackgroundColor3 = Color3.fromRGB(40,40,50); DelayBox.Position = UDim2.new(0, 90, 0, 145); DelayBox.Size = UDim2.new(0, 100, 0, 25); DelayBox.Font = Enum.Font.GothamBold; DelayBox.Text = "15"; DelayBox.TextColor3 = Color3.fromRGB(255,255,0); DelayBox.TextSize = 14
 Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0,4)
 DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n then getgenv().SniperConfig.HopDelay = n end end)
 
