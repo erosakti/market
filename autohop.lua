@@ -1,10 +1,11 @@
 --[[ 
-    ♾️ AUTO BUY V88 - ANY PRICE EDITION
+    👻 AUTO BUY V91 - NO TELEPORT EDITION
     
-    Fitur Baru:
-    - ANY PRICE MODE: Isi harga '0' untuk mencari item tanpa batasan harga.
-    - COCOK UNTUK HUNTER: Cari barang langka tanpa peduli harga.
-    - TELEPORT FIX: Membawa fitur V87 (Triple Teleport).
+    Perubahan:
+    - TELEPORT REMOVED: Karakter diam di tempat, tidak akan pindah ke booth.
+    - REMOTE BUY: Membeli item menggunakan sinyal remote saja.
+    - DEFAULT PRICE: 10 (Aman). Ubah ke 0 untuk Any Price.
+    - LOOPING: Barbar Loop (Cari -> Beli -> Cari lagi).
 ]]
 
 -- ==========================================================
@@ -42,53 +43,32 @@ end)
 getgenv().SniperConfig = {
     Running = false,
     Targets = {"Seal"},
-    MaxPrice = 0, -- Default 0 (Any Price)
+    MaxPrice = 10, -- Default 10 (Aman)
     HopDelay = 13,
-    AutoHop = true,
-    JustFind = true 
+    AutoHop = true
 }
 local ScriptAlive = true
 
 if game.CoreGui:FindFirstChild("SealSniperUI") then game.CoreGui.SealSniperUI:Destroy() end
 if game.CoreGui:FindFirstChild("AFKSaverUI") then game.CoreGui.AFKSaverUI:Destroy() end
 
--- === FUNGSI TELEPORT KUAT ===
-local function ForceTeleport(targetPlayer, boothController)
-    pcall(function()
-        if boothController and boothController.TeleportToBooth then
-            boothController:TeleportToBooth(targetPlayer)
-        end
-    end)
-    task.wait(0.5)
-    pcall(function()
-        if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 2)
-            end
-        end
-    end)
-end
-
 -- === FUNGSI WEBHOOK ===
-local function SendWebhook(itemName, price, sellerName, actionType)
+local function SendWebhook(itemName, price, sellerName)
     if not WEBHOOK_URL or WEBHOOK_URL == "" then return end
     
     local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
     if request then
-        local color = 65280 
-        if actionType == "FOUND (JUST FIND)" then color = 16776960 end 
-
         local embed = {
-            ["title"] = "💎 ITEM NOTIFICATION 💎",
-            ["description"] = "**Status:** " .. actionType,
-            ["color"] = color,
+            ["title"] = "👻 ITEM BOUGHT (NO TP) 👻",
+            ["description"] = "**Bot masih lanjut mencari...**",
+            ["color"] = 65280, -- Hijau
             ["fields"] = {
                 { ["name"] = "📦 Item Name", ["value"] = itemName, ["inline"] = false },
                 { ["name"] = "💰 Price", ["value"] = tostring(price) .. " Gems", ["inline"] = true },
                 { ["name"] = "👤 Seller", ["value"] = sellerName, ["inline"] = true },
                 { ["name"] = "📍 Server ID", ["value"] = game.JobId, ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "V88 Any Price" }
+            ["footer"] = { ["text"] = "V91 Ghost Buyer" }
         }
         
         request({
@@ -147,10 +127,10 @@ end
 -- === GUI BUILDER ===
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
 local MainFrame = Instance.new("Frame"); MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30); MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0); 
-MainFrame.Size = UDim2.new(0, 200, 0, 360); 
+MainFrame.Size = UDim2.new(0, 200, 0, 320); 
 MainFrame.Active = true; MainFrame.Draggable = true
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V88 (ANY PRICE)"; Title.TextColor3 = Color3.fromRGB(0, 255, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "SNIPER"; Title.TextColor3 = Color3.fromRGB(0, 255, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
 
 local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.Text = "Status: IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(200, 200, 200); StatusLbl.Position = UDim2.new(0, 10, 0, 30); StatusLbl.Size = UDim2.new(1, -20, 0, 30); StatusLbl.BackgroundTransparency = 1; StatusLbl.TextWrapped = true; StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -161,7 +141,7 @@ Instance.new("UICorner", TgtBox).CornerRadius = UDim.new(0,4)
 TgtBox.FocusLost:Connect(function() ParseTargets(TgtBox.Text) end)
 
 local PriceLbl = Instance.new("TextLabel"); PriceLbl.Parent = MainFrame; PriceLbl.Text = "Max Harga (0 = Any):"; PriceLbl.TextColor3 = Color3.fromRGB(180,180,180); PriceLbl.Position = UDim2.new(0, 10, 0, 115); PriceLbl.Size = UDim2.new(0, 120, 0, 25); PriceLbl.BackgroundTransparency = 1; PriceLbl.TextXAlignment = Enum.TextXAlignment.Left; PriceLbl.Font = Enum.Font.Gotham
-local PriceBox = Instance.new("TextBox"); PriceBox.Parent = MainFrame; PriceBox.BackgroundColor3 = Color3.fromRGB(40,40,50); PriceBox.Position = UDim2.new(0, 130, 0, 115); PriceBox.Size = UDim2.new(0, 60, 0, 25); PriceBox.Font = Enum.Font.GothamBold; PriceBox.Text = "0"; PriceBox.TextColor3 = Color3.fromRGB(0,255,255); PriceBox.TextSize = 14
+local PriceBox = Instance.new("TextBox"); PriceBox.Parent = MainFrame; PriceBox.BackgroundColor3 = Color3.fromRGB(40,40,50); PriceBox.Position = UDim2.new(0, 130, 0, 115); PriceBox.Size = UDim2.new(0, 60, 0, 25); PriceBox.Font = Enum.Font.GothamBold; PriceBox.Text = "10"; PriceBox.TextColor3 = Color3.fromRGB(255,255,0); PriceBox.TextSize = 14
 Instance.new("UICorner", PriceBox).CornerRadius = UDim.new(0,4)
 PriceBox.FocusLost:Connect(function() 
     local n = tonumber(PriceBox.Text)
@@ -176,22 +156,8 @@ local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.
 Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0,4)
 DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n then getgenv().SniperConfig.HopDelay = n end end)
 
--- MODE BTN
-local ModeBtn = Instance.new("TextButton"); ModeBtn.Parent = MainFrame; ModeBtn.Position = UDim2.new(0, 10, 0, 185); ModeBtn.Size = UDim2.new(1, -20, 0, 35); ModeBtn.Font = Enum.Font.GothamBold; ModeBtn.TextSize = 12; Instance.new("UICorner", ModeBtn).CornerRadius = UDim.new(0,6)
-local function UpdateMode()
-    if getgenv().SniperConfig.JustFind then
-        ModeBtn.Text = "MODE: JUST FIND (CARI AJA) 🔍"
-        ModeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-    else
-        ModeBtn.Text = "MODE: AUTO BUY (BELI) 🛒"
-        ModeBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-    end
-end
-UpdateMode()
-ModeBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.JustFind = not getgenv().SniperConfig.JustFind; UpdateMode() end)
-
 -- HOP BTN
-local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 10, 0, 225); HopBtn.Size = UDim2.new(1, -20, 0, 35); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 12; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,6)
+local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 10, 0, 185); HopBtn.Size = UDim2.new(1, -20, 0, 35); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 12; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,6)
 local function UpdateHop()
     if getgenv().SniperConfig.AutoHop then HopBtn.Text = "AUTO HOP: ON 🟢"; HopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 50) else HopBtn.Text = "AUTO HOP: OFF 🔴"; HopBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80) end
 end
@@ -199,17 +165,17 @@ UpdateHop()
 HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not getgenv().SniperConfig.AutoHop; UpdateHop() end)
 
 -- START BTN
-local RunBtn = Instance.new("TextButton"); RunBtn.Parent = MainFrame; RunBtn.Position = UDim2.new(0, 10, 0, 270); RunBtn.Size = UDim2.new(1, -20, 0, 45); RunBtn.Font = Enum.Font.GothamBlack; RunBtn.TextSize = 16; Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0,6)
+local RunBtn = Instance.new("TextButton"); RunBtn.Parent = MainFrame; RunBtn.Position = UDim2.new(0, 10, 0, 230); RunBtn.Size = UDim2.new(1, -20, 0, 45); RunBtn.Font = Enum.Font.GothamBlack; RunBtn.TextSize = 16; Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0,6)
 local function UpdateRun()
     ParseTargets(TgtBox.Text)
     local p = tonumber(PriceBox.Text); if p then getgenv().SniperConfig.MaxPrice = p end
     local d = tonumber(DelayBox.Text); if d then getgenv().SniperConfig.HopDelay = d end
 
     if getgenv().SniperConfig.Running then 
-        RunBtn.Text = "SCANNING... (STOP)"; RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        RunBtn.Text = "🔥 SCANNING (LOOP) 🔥"; RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         StatusLbl.Text = "Scanning ("..#getgenv().SniperConfig.Targets.." Items)..." 
     else 
-        RunBtn.Text = "START SNIPER"; RunBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        RunBtn.Text = "START AUTO BUY"; RunBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         StatusLbl.Text = "Status: IDLE" 
     end
 end
@@ -261,21 +227,16 @@ task.spawn(function()
                                             for _, t in pairs(getgenv().SniperConfig.Targets) do
                                                 if name == t then
                                                     Found = true
-                                                    StatusLbl.Text = "FOUND: " .. name .. " (" .. p.Name .. ")"
+                                                    StatusLbl.Text = "BUYING: " .. name .. " (" .. p.Name .. ")"
                                                     StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
                                                     
-                                                    ForceTeleport(p, Booths)
+                                                    -- AUTO BUY (ALWAYS)
+                                                    if Buy then Buy:BuyItem(p, id)
+                                                    else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(p, id) end
                                                     
-                                                    if not getgenv().SniperConfig.JustFind then
-                                                        -- MODE AUTO BUY
-                                                        if Buy then Buy:BuyItem(p, id)
-                                                        else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(p, id) end
-                                                        
-                                                        SendWebhook(name, info.Price, p.Name, "BOUGHT (AUTO BUY)")
-                                                    else
-                                                        -- MODE JUST FIND
-                                                        SendWebhook(name, info.Price, p.Name, "FOUND (JUST FIND)")
-                                                    end
+                                                    SendWebhook(name, info.Price, p.Name)
+                                                    
+                                                    task.wait(2) 
                                                 end
                                             end
                                         end
@@ -284,18 +245,18 @@ task.spawn(function()
                             end
                         end)
                     end
-                    if Found then break end
                 end
             end
 
-            if not Found and getgenv().SniperConfig.AutoHop then
-                StatusLbl.Text = "Hopping..."
-                StatusLbl.TextColor3 = Color3.fromRGB(255, 0, 0)
+            -- LOGIC LOOPING
+            if getgenv().SniperConfig.AutoHop then
+                StatusLbl.Text = "Hopping (Looping)..."
+                StatusLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
                 ServerHop()
                 task.wait(10)
-            elseif Found then
-                getgenv().SniperConfig.Running = false 
-                UpdateRun()
+            else
+                StatusLbl.Text = "Re-scanning (Looping)..."
+                task.wait(1)
             end
         else
             task.wait(1) 
