@@ -1,16 +1,16 @@
 --[[ 
-    🚀 AUTO BUY V87 - TELEPORT FIX
+    ♾️ AUTO BUY V88 - ANY PRICE EDITION
     
-    Perbaikan:
-    - Menambahkan fungsi "ForceTeleport".
-    - Jika gagal TP ke Booth, dia akan TP ke Kepala Penjualnya langsung.
-    - Memastikan kamu sampai di depan target.
+    Fitur Baru:
+    - ANY PRICE MODE: Isi harga '0' untuk mencari item tanpa batasan harga.
+    - COCOK UNTUK HUNTER: Cari barang langka tanpa peduli harga.
+    - TELEPORT FIX: Membawa fitur V87 (Triple Teleport).
 ]]
 
 -- ==========================================================
 -- 👇 ISI LINK DISCORD WEBHOOK (OPSIONAL) 👇
 -- ==========================================================
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1456120032953110629/iPI8P3288dmCbbrdEHYvYErXrrBkkW2JrI2acnowKqLbu-fTGFJZUx0NfJ_6TLKS1vS5" 
+local WEBHOOK_URL = "" 
 -- ==========================================================
 
 local OWNER_IDS = { 9169453437 } -- Ganti ID Kamu
@@ -42,7 +42,7 @@ end)
 getgenv().SniperConfig = {
     Running = false,
     Targets = {"Seal"},
-    MaxPrice = 10,
+    MaxPrice = 0, -- Default 0 (Any Price)
     HopDelay = 15,
     AutoHop = true,
     JustFind = true 
@@ -52,22 +52,17 @@ local ScriptAlive = true
 if game.CoreGui:FindFirstChild("SealSniperUI") then game.CoreGui.SealSniperUI:Destroy() end
 if game.CoreGui:FindFirstChild("AFKSaverUI") then game.CoreGui.AFKSaverUI:Destroy() end
 
--- === FUNGSI TELEPORT KUAT (BARU) ===
+-- === FUNGSI TELEPORT KUAT ===
 local function ForceTeleport(targetPlayer, boothController)
-    -- Cara 1: Pakai Controller Game
     pcall(function()
         if boothController and boothController.TeleportToBooth then
             boothController:TeleportToBooth(targetPlayer)
         end
     end)
-    
-    task.wait(0.5) -- Jeda sebentar
-    
-    -- Cara 2: Teleport Manual ke Karakter Penjual (Backup Paling Ampuh)
+    task.wait(0.5)
     pcall(function()
         if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                -- Teleport ke atas kepala penjual sedikit biar gak nyangkut
                 LocalPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 2)
             end
         end
@@ -93,7 +88,7 @@ local function SendWebhook(itemName, price, sellerName, actionType)
                 { ["name"] = "👤 Seller", ["value"] = sellerName, ["inline"] = true },
                 { ["name"] = "📍 Server ID", ["value"] = game.JobId, ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "V87 Teleport Fix" }
+            ["footer"] = { ["text"] = "V88 Any Price" }
         }
         
         request({
@@ -155,7 +150,7 @@ local MainFrame = Instance.new("Frame"); MainFrame.Parent = ScreenGui; MainFrame
 MainFrame.Size = UDim2.new(0, 200, 0, 360); 
 MainFrame.Active = true; MainFrame.Draggable = true
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V87 (TP FIX)"; Title.TextColor3 = Color3.fromRGB(0, 255, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V88 (ANY PRICE)"; Title.TextColor3 = Color3.fromRGB(0, 255, 0); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
 
 local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.Text = "Status: IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(200, 200, 200); StatusLbl.Position = UDim2.new(0, 10, 0, 30); StatusLbl.Size = UDim2.new(1, -20, 0, 30); StatusLbl.BackgroundTransparency = 1; StatusLbl.TextWrapped = true; StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -165,13 +160,19 @@ local TgtBox = Instance.new("TextBox"); TgtBox.Parent = MainFrame; TgtBox.Backgr
 Instance.new("UICorner", TgtBox).CornerRadius = UDim.new(0,4)
 TgtBox.FocusLost:Connect(function() ParseTargets(TgtBox.Text) end)
 
-local PriceLbl = Instance.new("TextLabel"); PriceLbl.Parent = MainFrame; PriceLbl.Text = "Max Harga:"; PriceLbl.TextColor3 = Color3.fromRGB(180,180,180); PriceLbl.Position = UDim2.new(0, 10, 0, 115); PriceLbl.Size = UDim2.new(0, 80, 0, 25); PriceLbl.BackgroundTransparency = 1; PriceLbl.TextXAlignment = Enum.TextXAlignment.Left; PriceLbl.Font = Enum.Font.Gotham
-local PriceBox = Instance.new("TextBox"); PriceBox.Parent = MainFrame; PriceBox.BackgroundColor3 = Color3.fromRGB(40,40,50); PriceBox.Position = UDim2.new(0, 90, 0, 115); PriceBox.Size = UDim2.new(0, 100, 0, 25); PriceBox.Font = Enum.Font.GothamBold; PriceBox.Text = "10"; PriceBox.TextColor3 = Color3.fromRGB(255,255,0); PriceBox.TextSize = 14
+local PriceLbl = Instance.new("TextLabel"); PriceLbl.Parent = MainFrame; PriceLbl.Text = "Max Harga (0 = Any):"; PriceLbl.TextColor3 = Color3.fromRGB(180,180,180); PriceLbl.Position = UDim2.new(0, 10, 0, 115); PriceLbl.Size = UDim2.new(0, 120, 0, 25); PriceLbl.BackgroundTransparency = 1; PriceLbl.TextXAlignment = Enum.TextXAlignment.Left; PriceLbl.Font = Enum.Font.Gotham
+local PriceBox = Instance.new("TextBox"); PriceBox.Parent = MainFrame; PriceBox.BackgroundColor3 = Color3.fromRGB(40,40,50); PriceBox.Position = UDim2.new(0, 130, 0, 115); PriceBox.Size = UDim2.new(0, 60, 0, 25); PriceBox.Font = Enum.Font.GothamBold; PriceBox.Text = "0"; PriceBox.TextColor3 = Color3.fromRGB(0,255,255); PriceBox.TextSize = 14
 Instance.new("UICorner", PriceBox).CornerRadius = UDim.new(0,4)
-PriceBox.FocusLost:Connect(function() local n = tonumber(PriceBox.Text); if n then getgenv().SniperConfig.MaxPrice = n end end)
+PriceBox.FocusLost:Connect(function() 
+    local n = tonumber(PriceBox.Text)
+    if n then 
+        getgenv().SniperConfig.MaxPrice = n 
+        if n == 0 then PriceBox.TextColor3 = Color3.fromRGB(0,255,255) else PriceBox.TextColor3 = Color3.fromRGB(255,255,0) end
+    end 
+end)
 
 local DelayLbl = Instance.new("TextLabel"); DelayLbl.Parent = MainFrame; DelayLbl.Text = "Hop Delay (s):"; DelayLbl.TextColor3 = Color3.fromRGB(180,180,180); DelayLbl.Position = UDim2.new(0, 10, 0, 145); DelayLbl.Size = UDim2.new(0, 80, 0, 25); DelayLbl.BackgroundTransparency = 1; DelayLbl.TextXAlignment = Enum.TextXAlignment.Left; DelayLbl.Font = Enum.Font.Gotham
-local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.BackgroundColor3 = Color3.fromRGB(40,40,50); DelayBox.Position = UDim2.new(0, 90, 0, 145); DelayBox.Size = UDim2.new(0, 100, 0, 25); DelayBox.Font = Enum.Font.GothamBold; DelayBox.Text = "15"; DelayBox.TextColor3 = Color3.fromRGB(255,255,0); DelayBox.TextSize = 14
+local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.BackgroundColor3 = Color3.fromRGB(40,40,50); DelayBox.Position = UDim2.new(0, 90, 0, 145); DelayBox.Size = UDim2.new(0, 100, 0, 25); DelayBox.Font = Enum.Font.GothamBold; DelayBox.Text = "4"; DelayBox.TextColor3 = Color3.fromRGB(255,255,0); DelayBox.TextSize = 14
 Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0,4)
 DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n then getgenv().SniperConfig.HopDelay = n end end)
 
@@ -244,7 +245,16 @@ task.spawn(function()
                             local data = Booths:GetPlayerBoothData(p)
                             if data and data.Listings then
                                 for id, info in pairs(data.Listings) do
-                                    if info.Price <= getgenv().SniperConfig.MaxPrice then
+                                    
+                                    -- Logic Cek Harga (0 = Any Price)
+                                    local priceOk = false
+                                    if getgenv().SniperConfig.MaxPrice == 0 then
+                                        priceOk = true
+                                    elseif info.Price <= getgenv().SniperConfig.MaxPrice then
+                                        priceOk = true
+                                    end
+                                    
+                                    if priceOk then
                                         local item = data.Items[info.ItemId]
                                         if item then
                                             local name = item.PetType or (item.PetData and item.PetData.PetType)
@@ -254,9 +264,7 @@ task.spawn(function()
                                                     StatusLbl.Text = "FOUND: " .. name .. " (" .. p.Name .. ")"
                                                     StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
                                                     
-                                                    -- === 🔥 FORCE TELEPORT HERE 🔥 ===
                                                     ForceTeleport(p, Booths)
-                                                    -- =================================
                                                     
                                                     if not getgenv().SniperConfig.JustFind then
                                                         -- MODE AUTO BUY
@@ -286,7 +294,6 @@ task.spawn(function()
                 ServerHop()
                 task.wait(10)
             elseif Found then
-                -- STOP SCANNING JIKA KETEMU
                 getgenv().SniperConfig.Running = false 
                 UpdateRun()
             end
