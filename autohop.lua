@@ -1,10 +1,10 @@
 --[[ 
-    📡 AUTO BUY V109 - WEBHOOK & SWEEP EDITION
+    ✨ AUTO BUY V110 - CLEAN UI FIX
     
-    Fitur Baru:
-    - DISCORD WEBHOOK: Input URL langsung di GUI.
-    - NOTIFIKASI: Mengirim laporan saat item terbeli (Nama, Harga, Penjual).
-    - SWEEP MODE: Borong stok satu server (Reset timer saat beli).
+    Perbaikan:
+    - TEXT OVERFLOW FIX: URL Webhook tidak akan keluar dari kotak (ClipsDescendants).
+    - RATA KIRI: Input Webhook jadi rata kiri agar lebih mudah dibaca.
+    - FITUR: Tetap lengkap (Webhook, Sweep, Auto Hop, FPS Saver).
 ]]
 
 -- GLOBAL SETTINGS DEFAULT
@@ -15,12 +15,12 @@ local DefaultConfig = {
     MaxPrice = 10,
     Delay = 0.5,
     HopDelay = 15,
-    WebhookUrl = "" -- Simpan URL disini
+    WebhookUrl = "" 
 }
 
 -- CONFIG SYSTEM (SAVE/LOAD)
 local HttpService = game:GetService("HttpService")
-local FileName = "SealSniper_Config_V109.json"
+local FileName = "SealSniper_Config_V110.json"
 getgenv().SniperConfig = DefaultConfig 
 
 local function SaveConfig()
@@ -82,7 +82,7 @@ local function SendWebhook(itemName, price, seller)
                 {["name"] = "👤 Seller", ["value"] = seller, ["inline"] = true},
                 {["name"] = "📍 Server", ["value"] = game.JobId, ["inline"] = false}
             },
-            ["footer"] = {["text"] = "Seal Sniper V109"}
+            ["footer"] = {["text"] = "Seal Sniper V110"}
         }}
     }
     
@@ -151,7 +151,7 @@ end
 -- === GUI BUILDER ===
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
 
--- Main Frame (Size ditambah dikit buat Webhook: 160x250)
+-- Main Frame (Size 160x250)
 local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.BorderSizePixel = 0; MainFrame.Position = UDim2.new(0.02, 0, 0.25, 0); 
 MainFrame.Size = UDim2.new(0, 160, 0, 250); 
 MainFrame.Active = true; MainFrame.Draggable = true 
@@ -166,7 +166,10 @@ local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Backgro
 local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); 
 InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10
 InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); 
-InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromRGB(255, 255, 0); InputItem.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputItem.TextWrapped = true; 
+InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromRGB(255, 255, 0); InputItem.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
+InputItem.ClipsDescendants = true -- FIX OVERFLOW
+InputItem.TextWrapped = false -- Biar 1 baris
+InputItem.TextXAlignment = Enum.TextXAlignment.Center
 Instance.new("UICorner", InputItem).CornerRadius = UDim.new(0,4)
 InputItem.FocusLost:Connect(function() ParseTargets(InputItem.Text) end)
 
@@ -184,10 +187,14 @@ InputDelay.PlaceholderText = "Hop Delay (s)"; InputDelay.TextColor3 = Color3.fro
 Instance.new("UICorner", InputDelay).CornerRadius = UDim.new(0,4)
 InputDelay.FocusLost:Connect(function() getgenv().SniperConfig.HopDelay = tonumber(InputDelay.Text) or 8; SaveConfig() end)
 
--- 4. INPUT WEBHOOK (BARU)
+-- 4. INPUT WEBHOOK (FIXED UI)
 local InputWebhook = Instance.new("TextBox"); InputWebhook.Parent = MainFrame; InputWebhook.Position = UDim2.new(0, 8, 0, 115); InputWebhook.Size = UDim2.new(1, -16, 0, 25); InputWebhook.Font = Enum.Font.GothamBold; InputWebhook.TextSize = 9
 InputWebhook.Text = getgenv().SniperConfig.WebhookUrl or ""; 
-InputWebhook.PlaceholderText = "Paste Webhook URL Here"; InputWebhook.TextColor3 = Color3.fromRGB(200, 100, 255); InputWebhook.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
+InputWebhook.PlaceholderText = "Webhook URL"; InputWebhook.TextColor3 = Color3.fromRGB(200, 100, 255); InputWebhook.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
+-- 🔥 INI PERBAIKANNYA 🔥
+InputWebhook.ClipsDescendants = true -- Memotong teks yang keluar
+InputWebhook.TextXAlignment = Enum.TextXAlignment.Left -- Rata kiri agar awal link terbaca
+InputWebhook.ClearTextOnFocus = false
 Instance.new("UICorner", InputWebhook).CornerRadius = UDim.new(0,4)
 InputWebhook.FocusLost:Connect(function() getgenv().SniperConfig.WebhookUrl = InputWebhook.Text; SaveConfig() end)
 
@@ -230,7 +237,7 @@ CloseBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = f
 MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; RestoreBtn.Visible = true end)
 RestoreBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; RestoreBtn.Visible = false end)
 
--- SNIPER LOGIC (SWEEP + WEBHOOK)
+-- SNIPER LOGIC
 local hopTimer = tick()
 local BoothController = nil; pcall(function() BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController) end)
 local BuyController = nil; pcall(function() BuyController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController) end)
