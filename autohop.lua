@@ -1,11 +1,10 @@
 --[[ 
-    📱 AUTO BUY V105 - ULTRA COMPACT (NO GAP)
+    ⏱️ AUTO BUY V106 - CUSTOM DELAY EDITION
     
-    Perubahan Visual:
-    - GUI HEIGHT: Dikurangi drastis (190px).
-    - SPACING: Jarak antar tombol dirapatkan.
-    - LAYOUT: Lebih padat, tidak ada ruang kosong di bawah.
-    - FITUR: Tetap lengkap (Multi Target, Auto Save, No Ping Limit).
+    Fitur Baru:
+    - INPUT HOP DELAY: Atur waktu tunggu sebelum pindah server di GUI.
+    - AUTO SAVE: Settingan delay tersimpan otomatis.
+    - LAYOUT: Tetap compact (sedikit lebih tinggi).
 ]]
 
 -- GLOBAL SETTINGS DEFAULT
@@ -15,12 +14,12 @@ local DefaultConfig = {
     Targets = {"Seal"}, 
     MaxPrice = 10,
     Delay = 0.5,
-    HopDelay = 15
+    HopDelay = 8 -- Default 8 detik
 }
 
 -- CONFIG SYSTEM (SAVE/LOAD)
 local HttpService = game:GetService("HttpService")
-local FileName = "SealSniper_Config_V105.json"
+local FileName = "SealSniper_Config_V106.json"
 getgenv().SniperConfig = DefaultConfig 
 
 local function SaveConfig()
@@ -120,21 +119,21 @@ local function ToggleFPS(state)
     end
 end
 
--- === GUI BUILDER (ULTRA COMPACT) ===
+-- === GUI BUILDER ===
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
 
--- Main Frame (Size dipangkas dari 250 -> 190)
+-- Main Frame (Size 160x220)
 local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.BorderSizePixel = 0; MainFrame.Position = UDim2.new(0.02, 0, 0.25, 0); 
-MainFrame.Size = UDim2.new(0, 160, 0, 190); -- UKURAN BARU (LEBIH PENDEK)
+MainFrame.Size = UDim2.new(0, 160, 0, 220); 
 MainFrame.Active = true; MainFrame.Draggable = true 
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
 -- Restore Button
 local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; RestoreBtn.Visible = false; RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255); RestoreBtn.Position = UDim2.new(0.02, 0, 0.25, 0); RestoreBtn.Size = UDim2.new(0, 35, 0, 35); RestoreBtn.Text = "OPEN"; RestoreBtn.TextColor3 = Color3.new(1,1,1); RestoreBtn.Font = Enum.Font.GothamBold; RestoreBtn.TextSize = 10; Instance.new("UICorner", RestoreBtn).CornerRadius = UDim.new(0, 6)
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "AUTO SNIPER"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "BOT V106"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- INPUT TARGET (Posisi dirapatkan)
+-- 1. INPUT TARGET
 local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); 
 InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10
 InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); 
@@ -142,22 +141,29 @@ InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromR
 Instance.new("UICorner", InputItem).CornerRadius = UDim.new(0,4)
 InputItem.FocusLost:Connect(function() ParseTargets(InputItem.Text) end)
 
--- INPUT PRICE (Posisi dirapatkan)
+-- 2. INPUT PRICE
 local InputPrice = Instance.new("TextBox"); InputPrice.Parent = MainFrame; InputPrice.Position = UDim2.new(0, 8, 0, 55); InputPrice.Size = UDim2.new(1, -16, 0, 25); InputPrice.Font = Enum.Font.GothamBold; InputPrice.TextSize = 10
 InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice); 
 InputPrice.PlaceholderText = "Max Price"; InputPrice.TextColor3 = Color3.fromRGB(0, 255, 0); InputPrice.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
 Instance.new("UICorner", InputPrice).CornerRadius = UDim.new(0,4)
 InputPrice.FocusLost:Connect(function() getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 0; SaveConfig() end)
 
--- ROW BUTTONS (Hop & FPS) - Posisi dirapatkan
-local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 8, 0, 85); HopBtn.Size = UDim2.new(0.5, -6, 0, 25); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 9; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,4)
-local FPSBtn = Instance.new("TextButton"); FPSBtn.Parent = MainFrame; FPSBtn.Position = UDim2.new(0.5, 4, 0, 85); FPSBtn.Size = UDim2.new(0.5, -12, 0, 25); FPSBtn.Font = Enum.Font.GothamBold; FPSBtn.TextSize = 9; Instance.new("UICorner", FPSBtn).CornerRadius = UDim.new(0,4)
+-- 3. INPUT HOP DELAY (BARU)
+local InputDelay = Instance.new("TextBox"); InputDelay.Parent = MainFrame; InputDelay.Position = UDim2.new(0, 8, 0, 85); InputDelay.Size = UDim2.new(1, -16, 0, 25); InputDelay.Font = Enum.Font.GothamBold; InputDelay.TextSize = 10
+InputDelay.Text = tostring(getgenv().SniperConfig.HopDelay); 
+InputDelay.PlaceholderText = "Hop Delay (s)"; InputDelay.TextColor3 = Color3.fromRGB(0, 200, 255); InputDelay.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
+Instance.new("UICorner", InputDelay).CornerRadius = UDim.new(0,4)
+InputDelay.FocusLost:Connect(function() getgenv().SniperConfig.HopDelay = tonumber(InputDelay.Text) or 8; SaveConfig() end)
 
--- START BUTTON (Posisi dirapatkan)
-local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Parent = MainFrame; ToggleBtn.Position = UDim2.new(0, 8, 0, 115); ToggleBtn.Size = UDim2.new(1, -16, 0, 30); ToggleBtn.Font = Enum.Font.GothamBlack; ToggleBtn.TextSize = 14; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,4)
+-- ROW BUTTONS
+local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 8, 0, 115); HopBtn.Size = UDim2.new(0.5, -6, 0, 25); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 9; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,4)
+local FPSBtn = Instance.new("TextButton"); FPSBtn.Parent = MainFrame; FPSBtn.Position = UDim2.new(0.5, 4, 0, 115); FPSBtn.Size = UDim2.new(0.5, -12, 0, 25); FPSBtn.Font = Enum.Font.GothamBold; FPSBtn.TextSize = 9; Instance.new("UICorner", FPSBtn).CornerRadius = UDim.new(0,4)
 
--- STATUS (Posisi dirapatkan & Tinggi dikurangi)
-local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 8, 0, 150); StatusLbl.Size = UDim2.new(1, -16, 0, 35); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150); StatusLbl.TextSize = 10; StatusLbl.TextWrapped = true; StatusLbl.TextYAlignment = Enum.TextYAlignment.Top
+-- START BUTTON
+local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Parent = MainFrame; ToggleBtn.Position = UDim2.new(0, 8, 0, 145); ToggleBtn.Size = UDim2.new(1, -16, 0, 30); ToggleBtn.Font = Enum.Font.GothamBlack; ToggleBtn.TextSize = 14; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,4)
+
+-- STATUS
+local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 8, 0, 180); StatusLbl.Size = UDim2.new(1, -16, 0, 35); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150); StatusLbl.TextSize = 10; StatusLbl.TextWrapped = true; StatusLbl.TextYAlignment = Enum.TextYAlignment.Top
 
 -- UI LOGIC
 local function UpdateUI()
@@ -166,11 +172,11 @@ local function UpdateUI()
     
     if getgenv().SniperConfig.Running then 
         ToggleBtn.Text = "STOP"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        StatusLbl.Text = "Scanning:\n" .. string.sub(table.concat(getgenv().SniperConfig.Targets, ", "), 1, 30) .. "..."
+        StatusLbl.Text = "Scan: " .. string.sub(table.concat(getgenv().SniperConfig.Targets, ", "), 1, 20) .. "..."
         StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
     else 
         ToggleBtn.Text = "START"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-        StatusLbl.Text = "Ready.\nPrice 0 = Any"
+        StatusLbl.Text = "Ready. Delay: " .. InputDelay.Text .."s"
         StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
     end
 end
