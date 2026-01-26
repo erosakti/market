@@ -1,10 +1,10 @@
 --[[ 
-    🧹 AUTO BUY V108 - BORONG / SWEEP EDITION
+    📡 AUTO BUY V109 - WEBHOOK & SWEEP EDITION
     
-    Perubahan Fatal:
-    - SWEEP MODE: Membeli SEMUA stok murah yang ada di server.
-    - SMART EXTEND: Timer Hop di-reset setiap kali ada transaksi berhasil.
-    - NO FORCE HOP: Tidak akan kabur sebelum server bersih dari barang murah.
+    Fitur Baru:
+    - DISCORD WEBHOOK: Input URL langsung di GUI.
+    - NOTIFIKASI: Mengirim laporan saat item terbeli (Nama, Harga, Penjual).
+    - SWEEP MODE: Borong stok satu server (Reset timer saat beli).
 ]]
 
 -- GLOBAL SETTINGS DEFAULT
@@ -14,12 +14,13 @@ local DefaultConfig = {
     Targets = {"Seal"}, 
     MaxPrice = 10,
     Delay = 0.5,
-    HopDelay = 15
+    HopDelay = 15,
+    WebhookUrl = "" -- Simpan URL disini
 }
 
 -- CONFIG SYSTEM (SAVE/LOAD)
 local HttpService = game:GetService("HttpService")
-local FileName = "SealSniper_Config_V108.json"
+local FileName = "SealSniper_Config_V109.json"
 getgenv().SniperConfig = DefaultConfig 
 
 local function SaveConfig()
@@ -65,6 +66,34 @@ LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
+
+-- WEBHOOK FUNCTION
+local function SendWebhook(itemName, price, seller)
+    local url = getgenv().SniperConfig.WebhookUrl
+    if not url or url == "" or not string.find(url, "http") then return end
+
+    local data = {
+        ["embeds"] = {{
+            ["title"] = "🛒 ITEM SNIPED!",
+            ["description"] = "Successfully bought **" .. itemName .. "**",
+            ["color"] = 65280, -- Hijau
+            ["fields"] = {
+                {["name"] = "💰 Price", ["value"] = tostring(price) .. " Gems", ["inline"] = true},
+                {["name"] = "👤 Seller", ["value"] = seller, ["inline"] = true},
+                {["name"] = "📍 Server", ["value"] = game.JobId, ["inline"] = false}
+            },
+            ["footer"] = {["text"] = "Seal Sniper V109"}
+        }}
+    }
+    
+    local headers = {["Content-Type"] = "application/json"}
+    local req = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+    if req then
+        pcall(function()
+            req({Url = url, Method = "POST", Headers = headers, Body = HttpService:JSONEncode(data)})
+        end)
+    end
+end
 
 -- SERVER HOP
 local function ServerHop()
@@ -119,12 +148,12 @@ local function ToggleFPS(state)
     end
 end
 
--- === GUI BUILDER (ULTRA COMPACT) ===
+-- === GUI BUILDER ===
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
 
--- Main Frame
+-- Main Frame (Size ditambah dikit buat Webhook: 160x250)
 local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.BorderSizePixel = 0; MainFrame.Position = UDim2.new(0.02, 0, 0.25, 0); 
-MainFrame.Size = UDim2.new(0, 160, 0, 220); 
+MainFrame.Size = UDim2.new(0, 160, 0, 250); 
 MainFrame.Active = true; MainFrame.Draggable = true 
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
@@ -133,7 +162,7 @@ local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; Re
 
 local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "BOT SNIPER"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- INPUT TARGET
+-- 1. INPUT TARGET
 local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); 
 InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10
 InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); 
@@ -141,29 +170,36 @@ InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromR
 Instance.new("UICorner", InputItem).CornerRadius = UDim.new(0,4)
 InputItem.FocusLost:Connect(function() ParseTargets(InputItem.Text) end)
 
--- INPUT PRICE
+-- 2. INPUT PRICE
 local InputPrice = Instance.new("TextBox"); InputPrice.Parent = MainFrame; InputPrice.Position = UDim2.new(0, 8, 0, 55); InputPrice.Size = UDim2.new(1, -16, 0, 25); InputPrice.Font = Enum.Font.GothamBold; InputPrice.TextSize = 10
 InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice); 
 InputPrice.PlaceholderText = "Max Price"; InputPrice.TextColor3 = Color3.fromRGB(0, 255, 0); InputPrice.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
 Instance.new("UICorner", InputPrice).CornerRadius = UDim.new(0,4)
 InputPrice.FocusLost:Connect(function() getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 0; SaveConfig() end)
 
--- INPUT DELAY
+-- 3. INPUT HOP DELAY
 local InputDelay = Instance.new("TextBox"); InputDelay.Parent = MainFrame; InputDelay.Position = UDim2.new(0, 8, 0, 85); InputDelay.Size = UDim2.new(1, -16, 0, 25); InputDelay.Font = Enum.Font.GothamBold; InputDelay.TextSize = 10
 InputDelay.Text = tostring(getgenv().SniperConfig.HopDelay); 
 InputDelay.PlaceholderText = "Hop Delay (s)"; InputDelay.TextColor3 = Color3.fromRGB(0, 200, 255); InputDelay.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
 Instance.new("UICorner", InputDelay).CornerRadius = UDim.new(0,4)
 InputDelay.FocusLost:Connect(function() getgenv().SniperConfig.HopDelay = tonumber(InputDelay.Text) or 8; SaveConfig() end)
 
--- BUTTONS
-local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 8, 0, 115); HopBtn.Size = UDim2.new(0.5, -6, 0, 25); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 9; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,4)
-local FPSBtn = Instance.new("TextButton"); FPSBtn.Parent = MainFrame; FPSBtn.Position = UDim2.new(0.5, 4, 0, 115); FPSBtn.Size = UDim2.new(0.5, -12, 0, 25); FPSBtn.Font = Enum.Font.GothamBold; FPSBtn.TextSize = 9; Instance.new("UICorner", FPSBtn).CornerRadius = UDim.new(0,4)
+-- 4. INPUT WEBHOOK (BARU)
+local InputWebhook = Instance.new("TextBox"); InputWebhook.Parent = MainFrame; InputWebhook.Position = UDim2.new(0, 8, 0, 115); InputWebhook.Size = UDim2.new(1, -16, 0, 25); InputWebhook.Font = Enum.Font.GothamBold; InputWebhook.TextSize = 9
+InputWebhook.Text = getgenv().SniperConfig.WebhookUrl or ""; 
+InputWebhook.PlaceholderText = "Paste Webhook URL Here"; InputWebhook.TextColor3 = Color3.fromRGB(200, 100, 255); InputWebhook.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
+Instance.new("UICorner", InputWebhook).CornerRadius = UDim.new(0,4)
+InputWebhook.FocusLost:Connect(function() getgenv().SniperConfig.WebhookUrl = InputWebhook.Text; SaveConfig() end)
 
--- START
-local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Parent = MainFrame; ToggleBtn.Position = UDim2.new(0, 8, 0, 145); ToggleBtn.Size = UDim2.new(1, -16, 0, 30); ToggleBtn.Font = Enum.Font.GothamBlack; ToggleBtn.TextSize = 14; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,4)
+-- ROW BUTTONS
+local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 8, 0, 145); HopBtn.Size = UDim2.new(0.5, -6, 0, 25); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 9; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,4)
+local FPSBtn = Instance.new("TextButton"); FPSBtn.Parent = MainFrame; FPSBtn.Position = UDim2.new(0.5, 4, 0, 145); FPSBtn.Size = UDim2.new(0.5, -12, 0, 25); FPSBtn.Font = Enum.Font.GothamBold; FPSBtn.TextSize = 9; Instance.new("UICorner", FPSBtn).CornerRadius = UDim.new(0,4)
+
+-- START BUTTON
+local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Parent = MainFrame; ToggleBtn.Position = UDim2.new(0, 8, 0, 175); ToggleBtn.Size = UDim2.new(1, -16, 0, 30); ToggleBtn.Font = Enum.Font.GothamBlack; ToggleBtn.TextSize = 14; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,4)
 
 -- STATUS
-local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 8, 0, 180); StatusLbl.Size = UDim2.new(1, -16, 0, 35); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150); StatusLbl.TextSize = 10; StatusLbl.TextWrapped = true; StatusLbl.TextYAlignment = Enum.TextYAlignment.Top
+local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 8, 0, 210); StatusLbl.Size = UDim2.new(1, -16, 0, 35); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150); StatusLbl.TextSize = 10; StatusLbl.TextWrapped = true; StatusLbl.TextYAlignment = Enum.TextYAlignment.Top
 
 -- UI LOGIC
 local function UpdateUI()
@@ -186,7 +222,7 @@ HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not
 FPSBtn.MouseButton1Click:Connect(function() ToggleFPS(true) end)
 ToggleBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running; SaveConfig(); UpdateUI() end)
 
--- CONTROLS
+-- WINDOW CONTROLS
 local CloseBtn = Instance.new("TextButton"); CloseBtn.Parent = MainFrame; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseBtn.Position = UDim2.new(1, -20, 0, 5); CloseBtn.Size = UDim2.new(0, 15, 0, 15); CloseBtn.Text = ""; Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,3)
 local MinBtn = Instance.new("TextButton"); MinBtn.Parent = MainFrame; MinBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100); MinBtn.Position = UDim2.new(1, -40, 0, 5); MinBtn.Size = UDim2.new(0, 15, 0, 15); MinBtn.Text = ""; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0,3)
 
@@ -194,7 +230,7 @@ CloseBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = f
 MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; RestoreBtn.Visible = true end)
 RestoreBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; RestoreBtn.Visible = false end)
 
--- SNIPER LOGIC (BORONG MODE)
+-- SNIPER LOGIC (SWEEP + WEBHOOK)
 local hopTimer = tick()
 local BoothController = nil; pcall(function() BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController) end)
 local BuyController = nil; pcall(function() BuyController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController) end)
@@ -216,7 +252,7 @@ local function processBoothData(player, data)
                 for _, targetName in pairs(getgenv().SniperConfig.Targets) do
                     if petName == targetName then
                         
-                        -- BARANG KETEMU & BELI
+                        -- BELI
                         StatusLbl.Text = "BUYING: " .. petName
                         StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
                         
@@ -224,10 +260,12 @@ local function processBoothData(player, data)
                             if BuyController and BuyController.BuyItem then BuyController:BuyItem(player, listingUUID) else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(player, listingUUID) end
                         end
                         
-                        -- 🔥 LOGIKA BARU: RESET TIMER (JANGAN HOP DULU) 🔥
-                        -- Kita reset timer hop agar bot punya waktu untuk beli sisa item
+                        -- WEBHOOK NOTIF
+                        SendWebhook(petName, info.Price, player.Name)
+                        
+                        -- RESET TIMER (SWEEP MODE)
                         hopTimer = tick() 
-                        StatusLbl.Text = "SWEEPING..." -- Mode borong aktif
+                        StatusLbl.Text = "SWEEPING..." 
                         
                         return 
                     end
@@ -246,9 +284,8 @@ task.spawn(function()
                 local durasi = tick() - hopTimer
                 local sisa = math.ceil(getgenv().SniperConfig.HopDelay - durasi)
                 
-                -- Hanya update teks jika tidak sedang 'Sweeping' (Membeli)
                 if StatusLbl.Text ~= "SWEEPING..." then
-                   if sisa % 1 == 0 then -- Update UI tiap detik biar gak spam
+                   if sisa % 1 == 0 then 
                        StatusLbl.Text = "Scan... Hop: " .. sisa .. "s"
                        StatusLbl.TextColor3 = Color3.fromRGB(255, 255, 0)
                    end
@@ -262,7 +299,7 @@ task.spawn(function()
                 end
             end
         else
-            hopTimer = tick() -- Reset timer kalau stop
+            hopTimer = tick()
         end
         task.wait(getgenv().SniperConfig.Delay)
     end
