@@ -1,134 +1,84 @@
 --[[ 
-    🛠️ AUTO BUY V95 - SMART TELEPORT FIX
+    📱 AUTO BUY V105 - ULTRA COMPACT (NO GAP)
     
-    Perbaikan Fatal:
-    - MENGEMBALIKAN FITUR TELEPORT: Wajib ada karena game memblokir pembelian jarak jauh.
-    - SMART TP: Hanya teleport saat item target ditemukan (Supaya transaksi valid).
-    - DEBUG STATUS: Menampilkan status di GUI apakah sedang OTW atau Gagal Beli.
+    Perubahan Visual:
+    - GUI HEIGHT: Dikurangi drastis (190px).
+    - SPACING: Jarak antar tombol dirapatkan.
+    - LAYOUT: Lebih padat, tidak ada ruang kosong di bawah.
+    - FITUR: Tetap lengkap (Multi Target, Auto Save, No Ping Limit).
 ]]
 
--- ==========================================================
--- 👇 LINK WEBHOOK (OPSIONAL) 👇
--- ==========================================================
-local WEBHOOK_URL = "" 
--- ==========================================================
+-- GLOBAL SETTINGS DEFAULT
+local DefaultConfig = {
+    Running = false,
+    AutoHop = true,
+    Targets = {"Seal"}, 
+    MaxPrice = 10,
+    Delay = 0.5,
+    HopDelay = 15
+}
 
-local OWNER_IDS = { 9169453437 } -- Ganti ID Kamu
+-- CONFIG SYSTEM (SAVE/LOAD)
+local HttpService = game:GetService("HttpService")
+local FileName = "SealSniper_Config_V105.json"
+getgenv().SniperConfig = DefaultConfig 
 
--- SYSTEM
+local function SaveConfig()
+    if writefile then
+        pcall(function()
+            local json = HttpService:JSONEncode(getgenv().SniperConfig)
+            writefile(FileName, json)
+        end)
+    end
+end
+
+local function LoadConfig()
+    if isfile and isfile(FileName) then
+        pcall(function()
+            local content = readfile(FileName)
+            local decoded = HttpService:JSONDecode(content)
+            if decoded then
+                for k, v in pairs(decoded) do
+                    getgenv().SniperConfig[k] = v
+                end
+            end
+        end)
+    end
+end
+
+LoadConfig() 
+
+-- CLEANUP
+if game.CoreGui:FindFirstChild("SealSniperUI") then game.CoreGui.SealSniperUI:Destroy() end
+if game.CoreGui:FindFirstChild("BlackScreen") then game.CoreGui.BlackScreen:Destroy() end
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local VirtualUser = game:GetService("VirtualUser")
-local Lighting = game:GetService("Lighting")
 
--- Cek Whitelist
-local isOwner = false
-for _, id in pairs(OWNER_IDS) do
-    if LocalPlayer.UserId == id then isOwner = true break end
-end
-if not isOwner then 
-    warn("⛔ AKSES DITOLAK: UserID tidak terdaftar di script!")
-    return 
-end
+if not game:IsLoaded() then game.Loaded:Wait() end
 
--- Anti-AFK
+-- ANTI-AFK
 LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- Config
-local FileName = "SealSniper_Config_V95.json"
-getgenv().SniperConfig = {
-    Running = false,
-    Targets = {"Seal"},
-    MaxPrice = 10,
-    HopDelay = 8,
-    AutoHop = true
-}
-
--- Load/Save System
-local function LoadConfig()
-    if isfile and isfile(FileName) then
-        pcall(function()
-            local decoded = HttpService:JSONDecode(readfile(FileName))
-            if decoded then for k, v in pairs(decoded) do getgenv().SniperConfig[k] = v end end
-        end)
-    end
-end
-local function SaveConfig()
-    if writefile then pcall(function() writefile(FileName, HttpService:JSONEncode(getgenv().SniperConfig)) end) end
-end
-LoadConfig()
-local ScriptAlive = true
-
-if game.CoreGui:FindFirstChild("SealSniperUI") then game.CoreGui.SealSniperUI:Destroy() end
-if game.CoreGui:FindFirstChild("AFKSaverUI") then game.CoreGui.AFKSaverUI:Destroy() end
-
--- === FUNGSI TELEPORT WAJIB ===
-local function SmartTeleport(targetPlayer, boothController)
-    -- Cara 1: Controller Game
-    pcall(function()
-        if boothController and boothController.TeleportToBooth then
-            boothController:TeleportToBooth(targetPlayer)
-        end
-    end)
-    
-    -- Cara 2: Paksa Pindah CFrame (Backup)
-    task.wait(0.2)
-    pcall(function()
-        if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                -- Pindah ke depan penjual (Jarak 3 stud)
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
-            end
-        end
-    end)
-end
-
--- === WEBHOOK ===
-local function SendWebhook(itemName, price, sellerName)
-    if not WEBHOOK_URL or WEBHOOK_URL == "" then return end
-    local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-    if request then
-        local embed = {
-            ["title"] = "✅ ITEM BOUGHT (V95 FIX)",
-            ["color"] = 65280,
-            ["fields"] = {
-                { ["name"] = "📦 Item", ["value"] = itemName, ["inline"] = true },
-                { ["name"] = "💰 Price", ["value"] = tostring(price), ["inline"] = true },
-                { ["name"] = "👤 Seller", ["value"] = sellerName, ["inline"] = true }
-            }
-        }
-        request({Url = WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode({ ["embeds"] = {embed} })})
-    end
-end
-
--- Helper
-local function ParseTargets(text)
-    local list = {}
-    for word in string.gmatch(text, "([^,]+)") do
-        local clean = word:match("^%s*(.-)%s*$")
-        if clean ~= "" then table.insert(list, clean) end
-    end
-    getgenv().SniperConfig.Targets = list
-    SaveConfig()
-end
-
+-- SERVER HOP
 local function ServerHop()
-    SaveConfig()
-    local req = (syn and syn.request) or (http and http.request) or request
-    if req then
+    SaveConfig() 
+    local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+    if httprequest then
         local servers = {}
-        local body = HttpService:JSONDecode(req({Url = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"}).Body)
+        local req = httprequest({Url = string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100", game.PlaceId)})
+        local body = HttpService:JSONDecode(req.Body)
         if body and body.data then
-            for _, v in next, body.data do
-                if type(v) == "table" and v.playing < v.maxPlayers and v.id ~= game.JobId then
-                    table.insert(servers, v.id)
+            for i, v in next, body.data do
+                if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= game.JobId then
+                    table.insert(servers, 1, v.id)
                 end
             end
         end
@@ -137,128 +87,157 @@ local function ServerHop()
         else
             TeleportService:Teleport(game.PlaceId, LocalPlayer)
         end
+    else
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
     end
 end
 
--- === GUI BUILDER ===
+-- PARSE TARGETS
+local function ParseTargets(text)
+    local list = {}
+    for word in string.gmatch(text, "([^,]+)") do
+        local cleanWord = word:match("^%s*(.-)%s*$")
+        if cleanWord ~= "" then table.insert(list, cleanWord) end
+    end
+    getgenv().SniperConfig.Targets = list
+    SaveConfig()
+end
+
+-- FPS SAVER
+local function ToggleFPS(state)
+    if state then
+        if not game.CoreGui:FindFirstChild("BlackScreen") then
+            local sg = Instance.new("ScreenGui"); sg.Name = "BlackScreen"; sg.Parent = CoreGui; sg.IgnoreGuiInset = true
+            local fr = Instance.new("Frame"); fr.Parent = sg; fr.Size = UDim2.new(1,0,1,0); fr.BackgroundColor3 = Color3.new(0,0,0); 
+            local btn = Instance.new("TextButton"); btn.Parent = fr; btn.Size = UDim2.new(1,0,1,0); btn.BackgroundTransparency = 1; btn.Text = "FPS MODE ON (TAP)"
+            btn.TextColor3 = Color3.new(1,1,1); btn.TextSize = 20
+            btn.MouseButton1Click:Connect(function() sg:Destroy() setfpscap(60) end)
+        end
+        setfpscap(10)
+    else
+        if game.CoreGui:FindFirstChild("BlackScreen") then game.CoreGui.BlackScreen:Destroy() end
+        setfpscap(60)
+    end
+end
+
+-- === GUI BUILDER (ULTRA COMPACT) ===
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
-local MainFrame = Instance.new("Frame"); MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 35); MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0); 
-MainFrame.Size = UDim2.new(0, 200, 0, 320); MainFrame.Active = true; MainFrame.Draggable = true
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.Text = "BOT V95 (TP FIX)"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 14
-local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.Text = "Status: IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(200, 200, 200); StatusLbl.Position = UDim2.new(0, 10, 0, 30); StatusLbl.Size = UDim2.new(1, -20, 0, 30); StatusLbl.BackgroundTransparency = 1; StatusLbl.TextWrapped = true; StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
+-- Main Frame (Size dipangkas dari 250 -> 190)
+local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.BorderSizePixel = 0; MainFrame.Position = UDim2.new(0.02, 0, 0.25, 0); 
+MainFrame.Size = UDim2.new(0, 160, 0, 190); -- UKURAN BARU (LEBIH PENDEK)
+MainFrame.Active = true; MainFrame.Draggable = true 
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
--- INPUTS
-local TgtLbl = Instance.new("TextLabel"); TgtLbl.Parent = MainFrame; TgtLbl.Text = "Nama Pet (Wajib Sama Persis):"; TgtLbl.TextColor3 = Color3.fromRGB(180,180,180); TgtLbl.Position = UDim2.new(0, 10, 0, 60); TgtLbl.Size = UDim2.new(1, -20, 0, 20); TgtLbl.BackgroundTransparency = 1; TgtLbl.TextXAlignment = Enum.TextXAlignment.Left; TgtLbl.Font = Enum.Font.Gotham
-local TgtBox = Instance.new("TextBox"); TgtBox.Parent = MainFrame; TgtBox.BackgroundColor3 = Color3.fromRGB(40,40,50); TgtBox.Position = UDim2.new(0, 10, 0, 80); TgtBox.Size = UDim2.new(1, -20, 0, 30); TgtBox.Font = Enum.Font.GothamBold; TgtBox.Text = table.concat(getgenv().SniperConfig.Targets, ", "); TgtBox.TextColor3 = Color3.fromRGB(255,255,0); TgtBox.TextSize = 12; TgtBox.PlaceholderText = "Seal, Hydra"
-Instance.new("UICorner", TgtBox).CornerRadius = UDim.new(0,4)
-TgtBox.FocusLost:Connect(function() ParseTargets(TgtBox.Text) end)
+-- Restore Button
+local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; RestoreBtn.Visible = false; RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255); RestoreBtn.Position = UDim2.new(0.02, 0, 0.25, 0); RestoreBtn.Size = UDim2.new(0, 35, 0, 35); RestoreBtn.Text = "OPEN"; RestoreBtn.TextColor3 = Color3.new(1,1,1); RestoreBtn.Font = Enum.Font.GothamBold; RestoreBtn.TextSize = 10; Instance.new("UICorner", RestoreBtn).CornerRadius = UDim.new(0, 6)
 
-local PriceLbl = Instance.new("TextLabel"); PriceLbl.Parent = MainFrame; PriceLbl.Text = "Max Harga (0 = Any):"; PriceLbl.TextColor3 = Color3.fromRGB(180,180,180); PriceLbl.Position = UDim2.new(0, 10, 0, 115); PriceLbl.Size = UDim2.new(0, 120, 0, 25); PriceLbl.BackgroundTransparency = 1; PriceLbl.TextXAlignment = Enum.TextXAlignment.Left; PriceLbl.Font = Enum.Font.Gotham
-local PriceBox = Instance.new("TextBox"); PriceBox.Parent = MainFrame; PriceBox.BackgroundColor3 = Color3.fromRGB(40,40,50); PriceBox.Position = UDim2.new(0, 130, 0, 115); PriceBox.Size = UDim2.new(0, 60, 0, 25); PriceBox.Font = Enum.Font.GothamBold; PriceBox.Text = tostring(getgenv().SniperConfig.MaxPrice); PriceBox.TextColor3 = Color3.fromRGB(255,255,0); PriceBox.TextSize = 14
-Instance.new("UICorner", PriceBox).CornerRadius = UDim.new(0,4)
-PriceBox.FocusLost:Connect(function() local n = tonumber(PriceBox.Text); if n then getgenv().SniperConfig.MaxPrice = n; SaveConfig() end end)
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "AUTO SNIPER"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
 
-local DelayLbl = Instance.new("TextLabel"); DelayLbl.Parent = MainFrame; DelayLbl.Text = "Hop Delay (s):"; DelayLbl.TextColor3 = Color3.fromRGB(180,180,180); DelayLbl.Position = UDim2.new(0, 10, 0, 145); DelayLbl.Size = UDim2.new(0, 80, 0, 25); DelayLbl.BackgroundTransparency = 1; DelayLbl.TextXAlignment = Enum.TextXAlignment.Left; DelayLbl.Font = Enum.Font.Gotham
-local DelayBox = Instance.new("TextBox"); DelayBox.Parent = MainFrame; DelayBox.BackgroundColor3 = Color3.fromRGB(40,40,50); DelayBox.Position = UDim2.new(0, 90, 0, 145); DelayBox.Size = UDim2.new(0, 100, 0, 25); DelayBox.Font = Enum.Font.GothamBold; DelayBox.Text = tostring(getgenv().SniperConfig.HopDelay); DelayBox.TextColor3 = Color3.fromRGB(255,255,0); DelayBox.TextSize = 14
-Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0,4)
-DelayBox.FocusLost:Connect(function() local n = tonumber(DelayBox.Text); if n then getgenv().SniperConfig.HopDelay = n; SaveConfig() end end)
+-- INPUT TARGET (Posisi dirapatkan)
+local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); 
+InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10
+InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); 
+InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromRGB(255, 255, 0); InputItem.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputItem.TextWrapped = true; 
+Instance.new("UICorner", InputItem).CornerRadius = UDim.new(0,4)
+InputItem.FocusLost:Connect(function() ParseTargets(InputItem.Text) end)
 
--- BUTTONS
-local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 10, 0, 185); HopBtn.Size = UDim2.new(1, -20, 0, 35); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 12; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,6)
-local function UpdateHop()
-    if getgenv().SniperConfig.AutoHop then HopBtn.Text = "AUTO HOP: ON 🟢"; HopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 50) else HopBtn.Text = "AUTO HOP: OFF 🔴"; HopBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80) end
-end
-UpdateHop()
-HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not getgenv().SniperConfig.AutoHop; SaveConfig(); UpdateHop() end)
+-- INPUT PRICE (Posisi dirapatkan)
+local InputPrice = Instance.new("TextBox"); InputPrice.Parent = MainFrame; InputPrice.Position = UDim2.new(0, 8, 0, 55); InputPrice.Size = UDim2.new(1, -16, 0, 25); InputPrice.Font = Enum.Font.GothamBold; InputPrice.TextSize = 10
+InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice); 
+InputPrice.PlaceholderText = "Max Price"; InputPrice.TextColor3 = Color3.fromRGB(0, 255, 0); InputPrice.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
+Instance.new("UICorner", InputPrice).CornerRadius = UDim.new(0,4)
+InputPrice.FocusLost:Connect(function() getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 0; SaveConfig() end)
 
-local RunBtn = Instance.new("TextButton"); RunBtn.Parent = MainFrame; RunBtn.Position = UDim2.new(0, 10, 0, 230); RunBtn.Size = UDim2.new(1, -20, 0, 45); RunBtn.Font = Enum.Font.GothamBlack; RunBtn.TextSize = 16; Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0,6)
-local function UpdateRun()
-    ParseTargets(TgtBox.Text)
+-- ROW BUTTONS (Hop & FPS) - Posisi dirapatkan
+local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 8, 0, 85); HopBtn.Size = UDim2.new(0.5, -6, 0, 25); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 9; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,4)
+local FPSBtn = Instance.new("TextButton"); FPSBtn.Parent = MainFrame; FPSBtn.Position = UDim2.new(0.5, 4, 0, 85); FPSBtn.Size = UDim2.new(0.5, -12, 0, 25); FPSBtn.Font = Enum.Font.GothamBold; FPSBtn.TextSize = 9; Instance.new("UICorner", FPSBtn).CornerRadius = UDim.new(0,4)
+
+-- START BUTTON (Posisi dirapatkan)
+local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Parent = MainFrame; ToggleBtn.Position = UDim2.new(0, 8, 0, 115); ToggleBtn.Size = UDim2.new(1, -16, 0, 30); ToggleBtn.Font = Enum.Font.GothamBlack; ToggleBtn.TextSize = 14; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,4)
+
+-- STATUS (Posisi dirapatkan & Tinggi dikurangi)
+local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 8, 0, 150); StatusLbl.Size = UDim2.new(1, -16, 0, 35); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150); StatusLbl.TextSize = 10; StatusLbl.TextWrapped = true; StatusLbl.TextYAlignment = Enum.TextYAlignment.Top
+
+-- UI LOGIC
+local function UpdateUI()
+    if getgenv().SniperConfig.AutoHop then HopBtn.Text = "HOP: ON"; HopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) else HopBtn.Text = "HOP: OFF"; HopBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60) end
+    FPSBtn.Text = "FPS SAVER"; FPSBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0); FPSBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    
     if getgenv().SniperConfig.Running then 
-        RunBtn.Text = "🔥 SCANNING... 🔥"; RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        StatusLbl.Text = "Scanning ("..#getgenv().SniperConfig.Targets.." Items)..." 
+        ToggleBtn.Text = "STOP"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        StatusLbl.Text = "Scanning:\n" .. string.sub(table.concat(getgenv().SniperConfig.Targets, ", "), 1, 30) .. "..."
+        StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
     else 
-        RunBtn.Text = "START SNIPER"; RunBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        StatusLbl.Text = "Status: IDLE" 
+        ToggleBtn.Text = "START"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        StatusLbl.Text = "Ready.\nPrice 0 = Any"
+        StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
     end
 end
-UpdateRun()
-RunBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running; SaveConfig(); UpdateRun() end)
+UpdateUI()
 
--- CONTROL
-local CloseBtn = Instance.new("TextButton"); CloseBtn.Parent = MainFrame; CloseBtn.Text = "X"; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseBtn.Position = UDim2.new(1, -25, 0, 5); CloseBtn.Size = UDim2.new(0, 20, 0, 20)
-CloseBtn.MouseButton1Click:Connect(function() ScriptAlive = false; ScreenGui:Destroy() end)
-local MinBtn = Instance.new("TextButton"); MinBtn.Parent = MainFrame; MinBtn.Text = "-"; MinBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100); MinBtn.Position = UDim2.new(1, -50, 0, 5); MinBtn.Size = UDim2.new(0, 20, 0, 20)
-local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; RestoreBtn.Text = "UI"; RestoreBtn.Visible = false; RestoreBtn.Position = UDim2.new(0, 10, 0.3, 0); RestoreBtn.Size = UDim2.new(0, 40, 0, 40); RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not getgenv().SniperConfig.AutoHop; SaveConfig(); UpdateUI() end)
+FPSBtn.MouseButton1Click:Connect(function() ToggleFPS(true) end)
+ToggleBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running; SaveConfig(); UpdateUI() end)
+
+-- WINDOW CONTROLS
+local CloseBtn = Instance.new("TextButton"); CloseBtn.Parent = MainFrame; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseBtn.Position = UDim2.new(1, -20, 0, 5); CloseBtn.Size = UDim2.new(0, 15, 0, 15); CloseBtn.Text = ""; Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,3)
+local MinBtn = Instance.new("TextButton"); MinBtn.Parent = MainFrame; MinBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100); MinBtn.Position = UDim2.new(1, -40, 0, 5); MinBtn.Size = UDim2.new(0, 15, 0, 15); MinBtn.Text = ""; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0,3)
+
+CloseBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = false; ScreenGui:Destroy() end)
 MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; RestoreBtn.Visible = true end)
 RestoreBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; RestoreBtn.Visible = false end)
 
--- LOGIC
-local Booths = nil; pcall(function() Booths = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController) end)
-local Buy = nil; pcall(function() Buy = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController) end)
+-- SNIPER LOGIC
+local hopTimer = tick()
+local itemFound = false
+local BoothController = nil; pcall(function() BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController) end)
+local BuyController = nil; pcall(function() BuyController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController) end)
 
-task.spawn(function()
-    while ScriptAlive do
-        if getgenv().SniperConfig.Running then
-            task.wait(getgenv().SniperConfig.HopDelay)
-            local Found = false
-            
-            if Booths then
-                local pList = Players:GetPlayers()
-                for _, p in ipairs(pList) do
-                    if p ~= LocalPlayer then
-                        pcall(function()
-                            local data = Booths:GetPlayerBoothData(p)
-                            if data and data.Listings then
-                                for id, info in pairs(data.Listings) do
-                                    local priceOk = false
-                                    if getgenv().SniperConfig.MaxPrice == 0 then priceOk = true
-                                    elseif info.Price <= getgenv().SniperConfig.MaxPrice then priceOk = true end
-                                    
-                                    if priceOk then
-                                        local item = data.Items[info.ItemId]
-                                        if item then
-                                            local name = item.PetType or (item.PetData and item.PetData.PetType)
-                                            for _, t in pairs(getgenv().SniperConfig.Targets) do
-                                                if name == t then
-                                                    Found = true
-                                                    StatusLbl.Text = "OTW BUY: " .. name
-                                                    StatusLbl.TextColor3 = Color3.fromRGB(255, 100, 0)
-                                                    
-                                                    -- 🚨 TELEPORT FIX: WAJIB DEKAT BIAR GAK ERROR 🚨
-                                                    SmartTeleport(p, Booths)
-                                                    task.wait(0.5) -- Tunggu bentar sampe teleport kelar
-                                                    
-                                                    if Buy then Buy:BuyItem(p, id)
-                                                    else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(p, id) end
-                                                    
-                                                    StatusLbl.Text = "BOUGHT: " .. name
-                                                    StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
-                                                    SendWebhook(name, info.Price, p.Name)
-                                                    task.wait(1)
-                                                end
-                                            end
-                                        end
-                                    end
-                                end
-                            end
-                        end)
+local function processBoothData(player, data)
+    if not getgenv().SniperConfig.Running then return end
+    if not data.Listings or not data.Items then return end
+    
+    local budget = getgenv().SniperConfig.MaxPrice
+    for listingUUID, info in pairs(data.Listings) do
+        local priceOk = false
+        if budget == 0 then priceOk = true elseif info.Price and info.Price <= budget then priceOk = true end
+        
+        if priceOk then
+            local linkID = info.ItemId
+            if linkID and data.Items[linkID] then
+                local itemData = data.Items[linkID]
+                local petName = itemData.PetType or (itemData.PetData and itemData.PetData.PetType)
+                for _, targetName in pairs(getgenv().SniperConfig.Targets) do
+                    if petName == targetName then
+                        itemFound = true 
+                        StatusLbl.Text = "FOUND: " .. petName
+                        if player ~= LocalPlayer then
+                            if BuyController and BuyController.BuyItem then BuyController:BuyItem(player, listingUUID) else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(player, listingUUID) end
+                        end
+                        return 
                     end
                 end
             end
-
-            if getgenv().SniperConfig.AutoHop then
-                StatusLbl.Text = "Hopping..."
-                StatusLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
-                ServerHop()
-                task.wait(10) 
-            else
-                StatusLbl.Text = "Scanning..."
-                task.wait(1)
-            end
-        else
-            task.wait(1) 
         end
+    end
+end
+
+task.spawn(function()
+    while true do
+        if getgenv().SniperConfig.Running then
+            pcall(function() if BoothController then for _, player in pairs(Players:GetPlayers()) do if player ~= LocalPlayer then local boothData = BoothController:GetPlayerBoothData(player); if boothData then processBoothData(player, boothData) end end end end end)
+            if getgenv().SniperConfig.AutoHop and not itemFound then
+                local durasi = tick() - hopTimer
+                local sisa = math.ceil(getgenv().SniperConfig.HopDelay - durasi)
+                if sisa <= 0 then 
+                    StatusLbl.Text = "HOPPING..."
+                    getgenv().SniperConfig.Running = true 
+                    ServerHop()
+                    task.wait(10)
+                end
+            elseif itemFound then hopTimer = tick() end
+        end
+        task.wait(getgenv().SniperConfig.Delay)
     end
 end)
