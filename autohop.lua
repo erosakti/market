@@ -233,7 +233,7 @@ local function processBoothData(player, data)
                         -- 🔥 LOGIKA HIT & RUN (PENTING) 🔥
                         -- Setelah beli, jangan diam! Langsung trigger Hop!
                         StatusLbl.Text = "BOUGHT! HOPPING..."
-                        task.wait(2) -- Kasih waktu 2 detik buat transaksi selesai
+                        task.wait(5) -- Kasih waktu 2 detik buat transaksi selesai
                         ServerHop()  -- PAKSA PINDAH SERVER
                         return 
                     end
