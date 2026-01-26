@@ -131,7 +131,7 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 -- Restore Button
 local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; RestoreBtn.Visible = false; RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255); RestoreBtn.Position = UDim2.new(0.02, 0, 0.25, 0); RestoreBtn.Size = UDim2.new(0, 35, 0, 35); RestoreBtn.Text = "OPEN"; RestoreBtn.TextColor3 = Color3.new(1,1,1); RestoreBtn.Font = Enum.Font.GothamBold; RestoreBtn.TextSize = 10; Instance.new("UICorner", RestoreBtn).CornerRadius = UDim.new(0, 6)
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "BOT V107"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "AUTO SNIPER"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- 1. INPUT TARGET
 local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); 
@@ -233,7 +233,7 @@ local function processBoothData(player, data)
                         -- 🔥 LOGIKA HIT & RUN (PENTING) 🔥
                         -- Setelah beli, jangan diam! Langsung trigger Hop!
                         StatusLbl.Text = "BOUGHT! HOPPING..."
-                        task.wait(5) -- Kasih waktu 2 detik buat transaksi selesai
+                        task.wait(7) -- Kasih waktu 2 detik buat transaksi selesai
                         ServerHop()  -- PAKSA PINDAH SERVER
                         return 
                     end
