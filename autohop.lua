@@ -1,10 +1,10 @@
 --[[ 
-    ⏱️ AUTO BUY V106 - CUSTOM DELAY EDITION
+    🔄 AUTO BUY V107 - CONTINUOUS FARMING (AUTO HOP FIX)
     
-    Fitur Baru:
-    - INPUT HOP DELAY: Atur waktu tunggu sebelum pindah server di GUI.
-    - AUTO SAVE: Settingan delay tersimpan otomatis.
-    - LAYOUT: Tetap compact (sedikit lebih tinggi).
+    Perbaikan Fatal:
+    - HIT & RUN: Setelah beli, bot OTOMATIS HOP SERVER (Tidak diam melongo).
+    - ANTI-STUCK: Bot tidak akan nyangkut walau item sudah found.
+    - GUI: Tetap Compact V106.
 ]]
 
 -- GLOBAL SETTINGS DEFAULT
@@ -14,12 +14,12 @@ local DefaultConfig = {
     Targets = {"Seal"}, 
     MaxPrice = 10,
     Delay = 0.5,
-    HopDelay = 8 -- Default 8 detik
+    HopDelay = 15
 }
 
 -- CONFIG SYSTEM (SAVE/LOAD)
 local HttpService = game:GetService("HttpService")
-local FileName = "SealSniper_Config_V106.json"
+local FileName = "SealSniper_Config_V107.json"
 getgenv().SniperConfig = DefaultConfig 
 
 local function SaveConfig()
@@ -131,7 +131,7 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 -- Restore Button
 local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; RestoreBtn.Visible = false; RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255); RestoreBtn.Position = UDim2.new(0.02, 0, 0.25, 0); RestoreBtn.Size = UDim2.new(0, 35, 0, 35); RestoreBtn.Text = "OPEN"; RestoreBtn.TextColor3 = Color3.new(1,1,1); RestoreBtn.Font = Enum.Font.GothamBold; RestoreBtn.TextSize = 10; Instance.new("UICorner", RestoreBtn).CornerRadius = UDim.new(0, 6)
 
-local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "BOT V106"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "BOT V107"; Title.TextColor3 = Color3.fromRGB(0, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- 1. INPUT TARGET
 local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); 
@@ -148,7 +148,7 @@ InputPrice.PlaceholderText = "Max Price"; InputPrice.TextColor3 = Color3.fromRGB
 Instance.new("UICorner", InputPrice).CornerRadius = UDim.new(0,4)
 InputPrice.FocusLost:Connect(function() getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 0; SaveConfig() end)
 
--- 3. INPUT HOP DELAY (BARU)
+-- 3. INPUT HOP DELAY
 local InputDelay = Instance.new("TextBox"); InputDelay.Parent = MainFrame; InputDelay.Position = UDim2.new(0, 8, 0, 85); InputDelay.Size = UDim2.new(1, -16, 0, 25); InputDelay.Font = Enum.Font.GothamBold; InputDelay.TextSize = 10
 InputDelay.Text = tostring(getgenv().SniperConfig.HopDelay); 
 InputDelay.PlaceholderText = "Hop Delay (s)"; InputDelay.TextColor3 = Color3.fromRGB(0, 200, 255); InputDelay.BackgroundColor3 = Color3.fromRGB(30, 30, 35); 
@@ -172,7 +172,7 @@ local function UpdateUI()
     
     if getgenv().SniperConfig.Running then 
         ToggleBtn.Text = "STOP"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        StatusLbl.Text = "Scan: " .. string.sub(table.concat(getgenv().SniperConfig.Targets, ", "), 1, 20) .. "..."
+        StatusLbl.Text = "Scanning:\n" .. string.sub(table.concat(getgenv().SniperConfig.Targets, ", "), 1, 20) .. "..."
         StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
     else 
         ToggleBtn.Text = "START"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
@@ -196,7 +196,7 @@ RestoreBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; Restor
 
 -- SNIPER LOGIC
 local hopTimer = tick()
-local itemFound = false
+-- itemFound Variable dihapus karena kita pakai Hit & Run
 local BoothController = nil; pcall(function() BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController) end)
 local BuyController = nil; pcall(function() BuyController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController) end)
 
@@ -216,11 +216,25 @@ local function processBoothData(player, data)
                 local petName = itemData.PetType or (itemData.PetData and itemData.PetData.PetType)
                 for _, targetName in pairs(getgenv().SniperConfig.Targets) do
                     if petName == targetName then
-                        itemFound = true 
-                        StatusLbl.Text = "FOUND: " .. petName
+                        
+                        -- BARANG KETEMU!
+                        StatusLbl.Text = "BUYING: " .. petName
+                        StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
+                        
+                        -- EXECUTE BUY
                         if player ~= LocalPlayer then
-                            if BuyController and BuyController.BuyItem then BuyController:BuyItem(player, listingUUID) else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(player, listingUUID) end
+                            if BuyController and BuyController.BuyItem then 
+                                BuyController:BuyItem(player, listingUUID) 
+                            else 
+                                ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(player, listingUUID) 
+                            end
                         end
+                        
+                        -- 🔥 LOGIKA HIT & RUN (PENTING) 🔥
+                        -- Setelah beli, jangan diam! Langsung trigger Hop!
+                        StatusLbl.Text = "BOUGHT! HOPPING..."
+                        task.wait(2) -- Kasih waktu 2 detik buat transaksi selesai
+                        ServerHop()  -- PAKSA PINDAH SERVER
                         return 
                     end
                 end
@@ -233,16 +247,21 @@ task.spawn(function()
     while true do
         if getgenv().SniperConfig.Running then
             pcall(function() if BoothController then for _, player in pairs(Players:GetPlayers()) do if player ~= LocalPlayer then local boothData = BoothController:GetPlayerBoothData(player); if boothData then processBoothData(player, boothData) end end end end end)
-            if getgenv().SniperConfig.AutoHop and not itemFound then
+            
+            -- Normal Auto Hop (Jika tidak ada barang)
+            if getgenv().SniperConfig.AutoHop then
                 local durasi = tick() - hopTimer
                 local sisa = math.ceil(getgenv().SniperConfig.HopDelay - durasi)
                 if sisa <= 0 then 
-                    StatusLbl.Text = "HOPPING..."
+                    StatusLbl.Text = "SCAN COMPLETE. HOPPING..."
                     getgenv().SniperConfig.Running = true 
                     ServerHop()
                     task.wait(10)
                 end
-            elseif itemFound then hopTimer = tick() end
+            end
+        else
+            -- Reset timer kalau bot di-stop
+            hopTimer = tick()
         end
         task.wait(getgenv().SniperConfig.Delay)
     end
