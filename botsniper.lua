@@ -1,11 +1,6 @@
 --[[ 
-    🛡️ SEAL SNIPER V119 + KEY SYSTEM INTEGRATED
-    
-    Fitur:
-    1. Key System: Cek whitelist via GitHub Gist.
-    2. Auto-Save: Key tersimpan otomatis (tidak perlu ketik ulang).
-    3. Auto-Login: Langsung masuk jika key valid tersimpan.
-    4. Main Bot: Seal Sniper V119 (Stability Edition).
+    🛡️ SEAL SNIPER V119 + KEY SYSTEM (FIXED WHITESPACE)
+    Status: SOLVED INVALID KEY ISSUE (\r\n fix)
 ]]
 
 -- ==================================================================
@@ -16,7 +11,7 @@ local DATABASE_URL = "https://gist.githubusercontent.com/erosakti/922a8f5adcfb84
 local KEY_FILE_NAME = "SealSniper_Key.json"
 
 -- ==================================================================
--- 🛠️ FUNGSI SISTEM KEY (JANGAN DIUBAH)
+-- 🛠️ FUNGSI SISTEM (JANGAN DIUBAH)
 -- ==================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -36,13 +31,19 @@ local function GetLinkData(url)
     return game:HttpGet(NoCacheUrl)
 end
 
--- 2. FUNGSI CEK KEY (LINE BY LINE)
+-- 2. FUNGSI CEK KEY (VERSI AGRESIF)
 local function CheckIsValid(databaseText, userKey)
     if not databaseText or not userKey then return false end
+    
+    -- Hapus semua spasi (%s) dan enter/tab (%c) dari input user
+    local cleanInput = userKey:gsub("[%s%c]+", "") 
+    
     for _, line in ipairs(databaseText:split("\n")) do
-        local cleanLine = line:gsub("%s+", "") -- Hapus spasi database
-        local cleanInput = userKey:gsub("%s+", "") -- Hapus spasi input
-        if cleanLine == cleanInput and cleanLine ~= "" then
+        -- Hapus semua spasi dan enter dari baris database
+        local cleanLine = line:gsub("[%s%c]+", "")
+        
+        -- Bandingkan yang sudah bersih
+        if cleanLine ~= "" and cleanLine == cleanInput then
             return true
         end
     end
@@ -50,14 +51,12 @@ local function CheckIsValid(databaseText, userKey)
 end
 
 -- ==================================================================
--- 🤖 MAIN BOT FUNCTION (V119 CODE DI SINI)
+-- 🤖 MAIN BOT FUNCTION (V119)
 -- ==================================================================
 
 local function StartSealSniperV119()
-    -- Hapus GUI Key System jika ada
     if CoreGui:FindFirstChild("SealKeySystem") then CoreGui.SealKeySystem:Destroy() end
     
-    -- Notifikasi Login Sukses
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "ACCESS GRANTED";
         Text = "Loading V119 Stability...";
@@ -66,24 +65,12 @@ local function StartSealSniperV119()
     
     task.wait(1)
 
-    -- 👇👇👇 KODE V119 ASLI KAMU MULAI DARI SINI 👇👇👇
-
-    -- GLOBAL SETTINGS DEFAULT
+    -- KODE V119 START --
     local DefaultConfig = {
-        Running = false,
-        AutoHop = true,
-        Targets = {"Seal"}, 
-        MaxPrice = 10,
-        Delay = 0.0, -- Turbo Mode
-        HopDelay = 8,
-        WebhookUrl = "" 
+        Running = false, AutoHop = true, Targets = {"Seal"}, MaxPrice = 10,
+        Delay = 0.0, HopDelay = 8, WebhookUrl = "" 
     }
-
-    -- CONFIG SYSTEM
-    local HttpService = game:GetService("HttpService")
     local ConfigFile = "SealSniper_Config_V119.json"
-
-    -- LOAD CONFIG
     getgenv().SniperConfig = DefaultConfig 
     if isfile(ConfigFile) then
         pcall(function()
@@ -91,14 +78,10 @@ local function StartSealSniperV119()
             for k, v in pairs(decoded) do getgenv().SniperConfig[k] = v end
         end)
     end
-
     local function SaveConfig()
-        if writefile then
-            pcall(function() writefile(ConfigFile, HttpService:JSONEncode(getgenv().SniperConfig)) end)
-        end
+        if writefile then pcall(function() writefile(ConfigFile, HttpService:JSONEncode(getgenv().SniperConfig)) end) end
     end
 
-    -- CLEANUP UI BOT
     if game.CoreGui:FindFirstChild("SealSniperUI") then game.CoreGui.SealSniperUI:Destroy() end
     if game.CoreGui:FindFirstChild("BlackScreen") then game.CoreGui.BlackScreen:Destroy() end
 
@@ -106,13 +89,11 @@ local function StartSealSniperV119()
     local LocalPlayer = Players.LocalPlayer
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local TeleportService = game:GetService("TeleportService")
-    local CoreGui = game:GetService("CoreGui")
     local VirtualUser = game:GetService("VirtualUser")
     local UserInputService = game:GetService("UserInputService")
 
     if not game:IsLoaded() then game.Loaded:Wait() end
 
-    -- 🔥 ANTI-DISCONNECT / AUTO REJOIN 🔥
     task.spawn(function()
         game.CoreGui.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
             if child.Name == 'ErrorPrompt' and child:FindFirstChild('MessageArea') and child.MessageArea:FindFirstChild("ErrorFrame") then
@@ -122,13 +103,8 @@ local function StartSealSniperV119()
         end)
     end)
 
-    -- ANTI-AFK
-    LocalPlayer.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
+    LocalPlayer.Idled:Connect(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new()) end)
 
-    -- PARSE TARGETS
     local function ParseTargets(text)
         local list = {}
         for word in string.gmatch(text, "([^,]+)") do
@@ -139,7 +115,6 @@ local function StartSealSniperV119()
         SaveConfig()
     end
 
-    -- SERVER HOP
     local function ServerHop()
         SaveConfig() 
         local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
@@ -154,24 +129,17 @@ local function StartSealSniperV119()
                     end
                 end
             end
-            if #servers > 0 then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
-            else
-                TeleportService:Teleport(game.PlaceId, LocalPlayer)
-            end
-        else
-            TeleportService:Teleport(game.PlaceId, LocalPlayer)
-        end
+            if #servers > 0 then TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+            else TeleportService:Teleport(game.PlaceId, LocalPlayer) end
+        else TeleportService:Teleport(game.PlaceId, LocalPlayer) end
     end
 
-    -- FPS SAVER
     local function ToggleFPS(state)
         if state then
             if not game.CoreGui:FindFirstChild("BlackScreen") then
                 local sg = Instance.new("ScreenGui"); sg.Name = "BlackScreen"; sg.Parent = CoreGui; sg.IgnoreGuiInset = true
                 local fr = Instance.new("Frame"); fr.Parent = sg; fr.Size = UDim2.new(1,0,1,0); fr.BackgroundColor3 = Color3.new(0,0,0); 
-                local btn = Instance.new("TextButton"); btn.Parent = fr; btn.Size = UDim2.new(1,0,1,0); btn.BackgroundTransparency = 1; btn.Text = "FPS MODE ON (TAP TO OFF)"
-                btn.TextColor3 = Color3.new(1,1,1); btn.TextSize = 20
+                local btn = Instance.new("TextButton"); btn.Parent = fr; btn.Size = UDim2.new(1,0,1,0); btn.BackgroundTransparency = 1; btn.Text = "FPS MODE ON (TAP TO OFF)"; btn.TextColor3 = Color3.new(1,1,1); btn.TextSize = 20
                 btn.MouseButton1Click:Connect(function() sg:Destroy() setfpscap(60) end)
             end
             setfpscap(10)
@@ -181,298 +149,17 @@ local function StartSealSniperV119()
         end
     end
 
-    -- WEBHOOK
     local function SendWebhook(itemName, price, seller)
         local url = getgenv().SniperConfig.WebhookUrl
         if not url or url == "" or not string.find(url, "http") then return end
-        
-        local data = {
-            ["embeds"] = {{
-                ["title"] = "🛡️ STABLE SNIPE!",
-                ["description"] = "Bought **" .. itemName .. "**",
-                ["color"] = 65280, 
-                ["fields"] = {
-                    {["name"] = "💰 Price", ["value"] = tostring(price), ["inline"] = true},
-                    {["name"] = "👤 Seller", ["value"] = seller, ["inline"] = true}
-                },
-                ["footer"] = {["text"] = "Seal Sniper V119 (Anti-DC)"}
-            }}
-        }
+        local data = {["embeds"] = {{["title"] = "🛡️ STABLE SNIPE!", ["description"] = "Bought **" .. itemName .. "**", ["color"] = 65280, ["fields"] = {{["name"] = "💰 Price", ["value"] = tostring(price), ["inline"] = true}, {["name"] = "👤 Seller", ["value"] = seller, ["inline"] = true}}, ["footer"] = {["text"] = "Seal Sniper V119"}}}}
         local req = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
         if req then pcall(function() req({Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(data)}) end) end
     end
 
-    -- === GUI BUILDER ===
     local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealSniperUI"; ScreenGui.Parent = CoreGui
-
-    local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.BorderSizePixel = 0; MainFrame.Position = UDim2.new(0.02, 0, 0.25, 0); 
-    MainFrame.Size = UDim2.new(0, 160, 0, 250); 
-    MainFrame.Active = true; MainFrame.Draggable = true 
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-
-    -- Restore Button
+    local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.BorderSizePixel = 0; MainFrame.Position = UDim2.new(0.02, 0, 0.25, 0); MainFrame.Size = UDim2.new(0, 160, 0, 250); MainFrame.Active = true; MainFrame.Draggable = true; Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
     local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; RestoreBtn.Visible = false; RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255); RestoreBtn.Position = UDim2.new(0.02, 0, 0.25, 0); RestoreBtn.Size = UDim2.new(0, 35, 0, 35); RestoreBtn.Text = "OPEN"; RestoreBtn.TextColor3 = Color3.new(1,1,1); RestoreBtn.Font = Enum.Font.GothamBold; RestoreBtn.TextSize = 10; Instance.new("UICorner", RestoreBtn).CornerRadius = UDim.new(0, 6)
-
     local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "BOT V119 🛡️"; Title.TextColor3 = Color3.fromRGB(100, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- INPUTS
-    local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); 
-    InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10; InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromRGB(255, 255, 0); InputItem.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputItem.ClipsDescendants = true; InputItem.TextXAlignment = Enum.TextXAlignment.Center; Instance.new("UICorner", InputItem).CornerRadius = UDim.new(0,4)
-    InputItem.FocusLost:Connect(function() ParseTargets(InputItem.Text) end)
-
-    local InputPrice = Instance.new("TextBox"); InputPrice.Parent = MainFrame; InputPrice.Position = UDim2.new(0, 8, 0, 55); InputPrice.Size = UDim2.new(1, -16, 0, 25); InputPrice.Font = Enum.Font.GothamBold; InputPrice.TextSize = 10; InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice); InputPrice.PlaceholderText = "Max Price"; InputPrice.TextColor3 = Color3.fromRGB(0, 255, 0); InputPrice.BackgroundColor3 = Color3.fromRGB(30, 30, 35); Instance.new("UICorner", InputPrice).CornerRadius = UDim.new(0,4)
-    InputPrice.FocusLost:Connect(function() getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 0; SaveConfig() end)
-
-    local InputDelay = Instance.new("TextBox"); InputDelay.Parent = MainFrame; InputDelay.Position = UDim2.new(0, 8, 0, 85); InputDelay.Size = UDim2.new(1, -16, 0, 25); InputDelay.Font = Enum.Font.GothamBold; InputDelay.TextSize = 10; InputDelay.Text = tostring(getgenv().SniperConfig.HopDelay); InputDelay.PlaceholderText = "Hop Delay (s)"; InputDelay.TextColor3 = Color3.fromRGB(0, 200, 255); InputDelay.BackgroundColor3 = Color3.fromRGB(30, 30, 35); Instance.new("UICorner", InputDelay).CornerRadius = UDim.new(0,4)
-    InputDelay.FocusLost:Connect(function() getgenv().SniperConfig.HopDelay = tonumber(InputDelay.Text) or 8; SaveConfig() end)
-
-    local InputWebhook = Instance.new("TextBox"); InputWebhook.Parent = MainFrame; InputWebhook.Position = UDim2.new(0, 8, 0, 115); InputWebhook.Size = UDim2.new(1, -16, 0, 25); InputWebhook.Font = Enum.Font.GothamBold; InputWebhook.TextSize = 9; InputWebhook.Text = getgenv().SniperConfig.WebhookUrl or ""; InputWebhook.PlaceholderText = "Webhook URL"; InputWebhook.TextColor3 = Color3.fromRGB(200, 100, 255); InputWebhook.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputWebhook.ClipsDescendants = true; InputWebhook.TextXAlignment = Enum.TextXAlignment.Left; InputWebhook.ClearTextOnFocus = false; Instance.new("UICorner", InputWebhook).CornerRadius = UDim.new(0,4)
-    InputWebhook.FocusLost:Connect(function() getgenv().SniperConfig.WebhookUrl = InputWebhook.Text; SaveConfig() end)
-
-    local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 8, 0, 145); HopBtn.Size = UDim2.new(0.5, -6, 0, 25); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 9; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,4)
-    local FPSBtn = Instance.new("TextButton"); FPSBtn.Parent = MainFrame; FPSBtn.Position = UDim2.new(0.5, 4, 0, 145); FPSBtn.Size = UDim2.new(0.5, -12, 0, 25); FPSBtn.Font = Enum.Font.GothamBold; FPSBtn.TextSize = 9; Instance.new("UICorner", FPSBtn).CornerRadius = UDim.new(0,4)
-
-    local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Parent = MainFrame; ToggleBtn.Position = UDim2.new(0, 8, 0, 175); ToggleBtn.Size = UDim2.new(1, -16, 0, 30); ToggleBtn.Font = Enum.Font.GothamBlack; ToggleBtn.TextSize = 14; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,4)
-
-    local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 8, 0, 210); StatusLbl.Size = UDim2.new(1, -16, 0, 35); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150); StatusLbl.TextSize = 10; StatusLbl.TextWrapped = true; StatusLbl.TextYAlignment = Enum.TextYAlignment.Top
-
-    -- UI LOGIC
-    local function UpdateUI()
-        if getgenv().SniperConfig.AutoHop then HopBtn.Text = "HOP: ON"; HopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) else HopBtn.Text = "HOP: OFF"; HopBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60) end
-        FPSBtn.Text = "FPS SAVER"; FPSBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0); FPSBtn.TextColor3 = Color3.fromRGB(255,255,255)
-        
-        if getgenv().SniperConfig.Running then 
-            ToggleBtn.Text = "STOP"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-            StatusLbl.Text = "🔥 TURBO SCAN 🔥"
-            StatusLbl.TextColor3 = Color3.fromRGB(255, 50, 50)
-        else 
-            ToggleBtn.Text = "START"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-            StatusLbl.Text = "Ready."
-            StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
-        end
-    end
-    UpdateUI()
-
-    -- KEYBIND UNTUK HIDE UI (Right Control)
-    UserInputService.InputBegan:Connect(function(input)
-        if input.KeyCode == Enum.KeyCode.RightControl then
-            MainFrame.Visible = not MainFrame.Visible
-        end
-    end)
-
-    HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not getgenv().SniperConfig.AutoHop; SaveConfig(); UpdateUI() end)
-    FPSBtn.MouseButton1Click:Connect(function() ToggleFPS(true) end)
-    ToggleBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running; SaveConfig(); UpdateUI() end)
-
-    local CloseBtn = Instance.new("TextButton"); CloseBtn.Parent = MainFrame; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseBtn.Position = UDim2.new(1, -20, 0, 5); CloseBtn.Size = UDim2.new(0, 15, 0, 15); CloseBtn.Text = ""; Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,3)
-    local MinBtn = Instance.new("TextButton"); MinBtn.Parent = MainFrame; MinBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100); MinBtn.Position = UDim2.new(1, -40, 0, 5); MinBtn.Size = UDim2.new(0, 15, 0, 15); MinBtn.Text = ""; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0,3)
-    CloseBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = false; ScreenGui:Destroy() end)
-    MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; RestoreBtn.Visible = true end)
-    RestoreBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; RestoreBtn.Visible = false end)
-
-    -- SNIPER LOGIC
-    local hopTimer = tick()
-    local BoothController = nil; pcall(function() BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController) end)
-    local BuyController = nil; pcall(function() BuyController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController) end)
-
-    local function processBoothData(player, data)
-        if not getgenv().SniperConfig.Running then return end
-        if not data.Listings or not data.Items then return end
-        
-        local budget = getgenv().SniperConfig.MaxPrice
-        for listingUUID, info in pairs(data.Listings) do
-            local priceOk = false
-            if budget == 0 then priceOk = true elseif info.Price and info.Price <= budget then priceOk = true end
-            
-            if priceOk then
-                local linkID = info.ItemId
-                if linkID and data.Items[linkID] then
-                    local itemData = data.Items[linkID]
-                    local petName = itemData.PetType or (itemData.PetData and itemData.PetData.PetType)
-                    for _, targetName in pairs(getgenv().SniperConfig.Targets) do
-                        if petName == targetName then
-                            StatusLbl.Text = "BUYING: " .. petName
-                            StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
-                            
-                            task.spawn(function()
-                                if player ~= LocalPlayer then
-                                    if BuyController and BuyController.BuyItem then 
-                                        BuyController:BuyItem(player, listingUUID) 
-                                    else 
-                                        ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(player, listingUUID) 
-                                    end
-                                end
-                                SendWebhook(petName, info.Price, player.Name)
-                            end)
-                            
-                            hopTimer = tick() 
-                            StatusLbl.Text = "SWEEPING..." 
-                            return 
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    task.spawn(function()
-        while true do
-            if getgenv().SniperConfig.Running then
-                pcall(function() if BoothController then for _, player in pairs(Players:GetPlayers()) do if player ~= LocalPlayer then local boothData = BoothController:GetPlayerBoothData(player); if boothData then processBoothData(player, boothData) end end end end end)
-                
-                if getgenv().SniperConfig.AutoHop then
-                    local durasi = tick() - hopTimer
-                    local sisa = math.ceil(getgenv().SniperConfig.HopDelay - durasi)
-                    
-                    if StatusLbl.Text ~= "SWEEPING..." then
-                    if sisa % 1 == 0 then 
-                        StatusLbl.Text = "SCANNING... Hop: " .. sisa .. "s"
-                        StatusLbl.TextColor3 = Color3.fromRGB(255, 50, 50)
-                    end
-                    end
-
-                    if sisa <= 0 then 
-                        StatusLbl.Text = "HOPPING..."
-                        getgenv().SniperConfig.Running = true 
-                        ServerHop()
-                        task.wait(10)
-                    end
-                end
-            else
-                hopTimer = tick()
-            end
-            task.wait() 
-        end
-    end)
-    -- 👆👆👆 KODE V119 SELESAI DI SINI 👆👆👆
-end
-
--- ==================================================================
--- 🔄 AUTO-LOGIN CHECK (SEBELUM MEMBUAT GUI)
--- ==================================================================
-local AutoLoginSuccess = false
-
-if isfile(KEY_FILE_NAME) then
-    local SavedKey = readfile(KEY_FILE_NAME)
-    if SavedKey and SavedKey ~= "" then
-        -- Cek diam-diam ke database
-        local dbData = GetLinkData(DATABASE_URL)
-        if CheckIsValid(dbData, SavedKey) then
-            AutoLoginSuccess = true
-            StartSealSniperV119() -- LANGSUNG JALAN!
-        end
-    end
-end
-
-if AutoLoginSuccess then return end
-
--- ==================================================================
--- 🎨 GUI KEY SYSTEM (HANYA MUNCUL JIKA AUTO-LOGIN GAGAL)
--- ==================================================================
-
-if CoreGui:FindFirstChild("SealKeySystem") then CoreGui.SealKeySystem:Destroy() end
-
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local KeyInput = Instance.new("TextBox")
-local VerifyBtn = Instance.new("TextButton")
-local CloseKeyBtn = Instance.new("TextButton")
-local StatusLbl = Instance.new("TextLabel")
-
-ScreenGui.Name = "SealKeySystem"
-ScreenGui.Parent = CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
-MainFrame.Size = UDim2.new(0, 320, 0, 220)
-MainFrame.BorderSizePixel = 0
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
-Title.Parent = MainFrame
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 0, 0, 15)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Font = Enum.Font.GothamBlack
-Title.Text = "SEAL SNIPER HUB"
-Title.TextColor3 = Color3.fromRGB(0, 255, 150)
-Title.TextSize = 22
-
-KeyInput.Parent = MainFrame
-KeyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
-KeyInput.Size = UDim2.new(0.8, 0, 0, 40)
-KeyInput.Font = Enum.Font.GothamBold
-KeyInput.PlaceholderText = "Paste Key Here..."
-KeyInput.Text = "" 
-KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyInput.TextSize = 14
-Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 6)
-
-VerifyBtn.Parent = MainFrame
-VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
-VerifyBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
-VerifyBtn.Size = UDim2.new(0.8, 0, 0, 35)
-VerifyBtn.Font = Enum.Font.GothamBold
-VerifyBtn.Text = "LOGIN & SAVE KEY"
-VerifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-VerifyBtn.TextSize = 13
-Instance.new("UICorner", VerifyBtn).CornerRadius = UDim.new(0, 6)
-
-CloseKeyBtn.Name = "CloseButton"
-CloseKeyBtn.Parent = MainFrame
-CloseKeyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) 
-CloseKeyBtn.Position = UDim2.new(1, -30, 0, 5)
-CloseKeyBtn.Size = UDim2.new(0, 25, 0, 25)
-CloseKeyBtn.Font = Enum.Font.GothamBlack
-CloseKeyBtn.Text = "X"
-CloseKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseKeyBtn.TextSize = 14
-Instance.new("UICorner", CloseKeyBtn).CornerRadius = UDim.new(0, 6)
-
-StatusLbl.Parent = MainFrame
-StatusLbl.BackgroundTransparency = 1
-StatusLbl.Position = UDim2.new(0, 0, 0.85, 0)
-StatusLbl.Size = UDim2.new(1, 0, 0, 20)
-StatusLbl.Font = Enum.Font.Gotham
-StatusLbl.Text = "Please login first"
-StatusLbl.TextColor3 = Color3.fromRGB(100, 100, 100)
-StatusLbl.TextSize = 11
-
-CloseKeyBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
-VerifyBtn.MouseButton1Click:Connect(function()
-    StatusLbl.Text = "Verifying..."
-    StatusLbl.TextColor3 = Color3.fromRGB(255, 255, 0)
-    
-    local InputText = KeyInput.Text
-    InputText = string.gsub(InputText, "^%s*(.-)%s*$", "%1")
-    
-    if InputText == "" then
-        StatusLbl.Text = "Please enter a key!"
-        StatusLbl.TextColor3 = Color3.fromRGB(255, 50, 50)
-        return
-    end
-
-    local success, response = pcall(function()
-        return GetLinkData(DATABASE_URL)
-    end)
-    
-    if success and response then
-        if CheckIsValid(response, InputText) then
-            -- SIMPAN DAN JALANKAN
-            if writefile then writefile(KEY_FILE_NAME, InputText) end
-            StartSealSniperV119()
-        else
-            StatusLbl.Text = "INVALID KEY"
-            StatusLbl.TextColor3 = Color3.fromRGB(255, 50, 50)
-        end
-    else
-        StatusLbl.Text = "CONNECTION ERROR (Check F9)"
-        StatusLbl.TextColor3 = Color3.fromRGB(255, 0, 0)
-        print(response)
-    end
-end)
+    local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10; InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromRGB(255, 255, 0); InputItem.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputItem.ClipsDescendants = true; InputItem.TextXAlignment = Enum.TextXAlignment.Center; Instance.new("UICorner", InputItem).CornerRadius = UDim
