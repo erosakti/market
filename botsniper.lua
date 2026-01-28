@@ -162,4 +162,139 @@ local function StartSealSniperV119()
     local RestoreBtn = Instance.new("TextButton"); RestoreBtn.Parent = ScreenGui; RestoreBtn.Visible = false; RestoreBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255); RestoreBtn.Position = UDim2.new(0.02, 0, 0.25, 0); RestoreBtn.Size = UDim2.new(0, 35, 0, 35); RestoreBtn.Text = "OPEN"; RestoreBtn.TextColor3 = Color3.new(1,1,1); RestoreBtn.Font = Enum.Font.GothamBold; RestoreBtn.TextSize = 10; Instance.new("UICorner", RestoreBtn).CornerRadius = UDim.new(0, 6)
     local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 8, 0, 4); Title.Size = UDim2.new(0, 100, 0, 20); Title.Font = Enum.Font.GothamBold; Title.Text = "BOT V119 🛡️"; Title.TextColor3 = Color3.fromRGB(100, 255, 100); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
 
-    local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10; InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromRGB(255, 255, 0); InputItem.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputItem.ClipsDescendants = true; InputItem.TextXAlignment = Enum.TextXAlignment.Center; Instance.new("UICorner", InputItem).CornerRadius = UDim
+    local InputItem = Instance.new("TextBox"); InputItem.Parent = MainFrame; InputItem.Position = UDim2.new(0, 8, 0, 25); InputItem.Size = UDim2.new(1, -16, 0, 25); InputItem.Font = Enum.Font.GothamBold; InputItem.TextSize = 10; InputItem.Text = table.concat(getgenv().SniperConfig.Targets, ", "); InputItem.PlaceholderText = "Items (comma)"; InputItem.TextColor3 = Color3.fromRGB(255, 255, 0); InputItem.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputItem.ClipsDescendants = true; InputItem.TextXAlignment = Enum.TextXAlignment.Center; Instance.new("UICorner", InputItem).CornerRadius = UDim.new(0,4)
+    InputItem.FocusLost:Connect(function() ParseTargets(InputItem.Text) end)
+    local InputPrice = Instance.new("TextBox"); InputPrice.Parent = MainFrame; InputPrice.Position = UDim2.new(0, 8, 0, 55); InputPrice.Size = UDim2.new(1, -16, 0, 25); InputPrice.Font = Enum.Font.GothamBold; InputPrice.TextSize = 10; InputPrice.Text = tostring(getgenv().SniperConfig.MaxPrice); InputPrice.PlaceholderText = "Max Price"; InputPrice.TextColor3 = Color3.fromRGB(0, 255, 0); InputPrice.BackgroundColor3 = Color3.fromRGB(30, 30, 35); Instance.new("UICorner", InputPrice).CornerRadius = UDim.new(0,4)
+    InputPrice.FocusLost:Connect(function() getgenv().SniperConfig.MaxPrice = tonumber(InputPrice.Text) or 0; SaveConfig() end)
+    local InputDelay = Instance.new("TextBox"); InputDelay.Parent = MainFrame; InputDelay.Position = UDim2.new(0, 8, 0, 85); InputDelay.Size = UDim2.new(1, -16, 0, 25); InputDelay.Font = Enum.Font.GothamBold; InputDelay.TextSize = 10; InputDelay.Text = tostring(getgenv().SniperConfig.HopDelay); InputDelay.PlaceholderText = "Hop Delay (s)"; InputDelay.TextColor3 = Color3.fromRGB(0, 200, 255); InputDelay.BackgroundColor3 = Color3.fromRGB(30, 30, 35); Instance.new("UICorner", InputDelay).CornerRadius = UDim.new(0,4)
+    InputDelay.FocusLost:Connect(function() getgenv().SniperConfig.HopDelay = tonumber(InputDelay.Text) or 8; SaveConfig() end)
+    local InputWebhook = Instance.new("TextBox"); InputWebhook.Parent = MainFrame; InputWebhook.Position = UDim2.new(0, 8, 0, 115); InputWebhook.Size = UDim2.new(1, -16, 0, 25); InputWebhook.Font = Enum.Font.GothamBold; InputWebhook.TextSize = 9; InputWebhook.Text = getgenv().SniperConfig.WebhookUrl or ""; InputWebhook.PlaceholderText = "Webhook URL"; InputWebhook.TextColor3 = Color3.fromRGB(200, 100, 255); InputWebhook.BackgroundColor3 = Color3.fromRGB(30, 30, 35); InputWebhook.ClipsDescendants = true; InputWebhook.TextXAlignment = Enum.TextXAlignment.Left; InputWebhook.ClearTextOnFocus = false; Instance.new("UICorner", InputWebhook).CornerRadius = UDim.new(0,4)
+    InputWebhook.FocusLost:Connect(function() getgenv().SniperConfig.WebhookUrl = InputWebhook.Text; SaveConfig() end)
+
+    local HopBtn = Instance.new("TextButton"); HopBtn.Parent = MainFrame; HopBtn.Position = UDim2.new(0, 8, 0, 145); HopBtn.Size = UDim2.new(0.5, -6, 0, 25); HopBtn.Font = Enum.Font.GothamBold; HopBtn.TextSize = 9; Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0,4)
+    local FPSBtn = Instance.new("TextButton"); FPSBtn.Parent = MainFrame; FPSBtn.Position = UDim2.new(0.5, 4, 0, 145); FPSBtn.Size = UDim2.new(0.5, -12, 0, 25); FPSBtn.Font = Enum.Font.GothamBold; FPSBtn.TextSize = 9; Instance.new("UICorner", FPSBtn).CornerRadius = UDim.new(0,4)
+    local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Parent = MainFrame; ToggleBtn.Position = UDim2.new(0, 8, 0, 175); ToggleBtn.Size = UDim2.new(1, -16, 0, 30); ToggleBtn.Font = Enum.Font.GothamBlack; ToggleBtn.TextSize = 14; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,4)
+    local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 8, 0, 210); StatusLbl.Size = UDim2.new(1, -16, 0, 35); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "IDLE"; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150); StatusLbl.TextSize = 10; StatusLbl.TextWrapped = true; StatusLbl.TextYAlignment = Enum.TextYAlignment.Top
+
+    local function UpdateUI()
+        if getgenv().SniperConfig.AutoHop then HopBtn.Text = "HOP: ON"; HopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) else HopBtn.Text = "HOP: OFF"; HopBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60) end
+        FPSBtn.Text = "FPS SAVER"; FPSBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0); FPSBtn.TextColor3 = Color3.fromRGB(255,255,255)
+        if getgenv().SniperConfig.Running then ToggleBtn.Text = "STOP"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); StatusLbl.Text = "🔥 TURBO SCAN 🔥"; StatusLbl.TextColor3 = Color3.fromRGB(255, 50, 50)
+        else ToggleBtn.Text = "START"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50); StatusLbl.Text = "Ready."; StatusLbl.TextColor3 = Color3.fromRGB(150, 150, 150) end
+    end
+    UpdateUI()
+
+    UserInputService.InputBegan:Connect(function(input) if input.KeyCode == Enum.KeyCode.RightControl then MainFrame.Visible = not MainFrame.Visible end end)
+    HopBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.AutoHop = not getgenv().SniperConfig.AutoHop; SaveConfig(); UpdateUI() end)
+    FPSBtn.MouseButton1Click:Connect(function() ToggleFPS(true) end)
+    ToggleBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = not getgenv().SniperConfig.Running; SaveConfig(); UpdateUI() end)
+
+    local CloseBtn = Instance.new("TextButton"); CloseBtn.Parent = MainFrame; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseBtn.Position = UDim2.new(1, -20, 0, 5); CloseBtn.Size = UDim2.new(0, 15, 0, 15); CloseBtn.Text = ""; Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,3)
+    local MinBtn = Instance.new("TextButton"); MinBtn.Parent = MainFrame; MinBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100); MinBtn.Position = UDim2.new(1, -40, 0, 5); MinBtn.Size = UDim2.new(0, 15, 0, 15); MinBtn.Text = ""; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0,3)
+    CloseBtn.MouseButton1Click:Connect(function() getgenv().SniperConfig.Running = false; ScreenGui:Destroy() end)
+    MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; RestoreBtn.Visible = true end)
+    RestoreBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; RestoreBtn.Visible = false end)
+
+    local hopTimer = tick()
+    local BoothController = nil; pcall(function() BoothController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothController) end)
+    local BuyController = nil; pcall(function() BuyController = require(ReplicatedStorage.Modules.TradeBoothControllers.TradeBoothBuyItemController) end)
+
+    local function processBoothData(player, data)
+        if not getgenv().SniperConfig.Running then return end
+        if not data.Listings or not data.Items then return end
+        local budget = getgenv().SniperConfig.MaxPrice
+        for listingUUID, info in pairs(data.Listings) do
+            local priceOk = false
+            if budget == 0 then priceOk = true elseif info.Price and info.Price <= budget then priceOk = true end
+            if priceOk then
+                local linkID = info.ItemId
+                if linkID and data.Items[linkID] then
+                    local itemData = data.Items[linkID]
+                    local petName = itemData.PetType or (itemData.PetData and itemData.PetData.PetType)
+                    for _, targetName in pairs(getgenv().SniperConfig.Targets) do
+                        if petName == targetName then
+                            StatusLbl.Text = "BUYING: " .. petName; StatusLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
+                            task.spawn(function()
+                                if player ~= LocalPlayer then
+                                    if BuyController and BuyController.BuyItem then BuyController:BuyItem(player, listingUUID) else ReplicatedStorage.GameEvents.TradeEvents.Booths.BuyListing:InvokeServer(player, listingUUID) end
+                                end
+                                SendWebhook(petName, info.Price, player.Name)
+                            end)
+                            hopTimer = tick(); StatusLbl.Text = "SWEEPING..."; return 
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    task.spawn(function()
+        while true do
+            if getgenv().SniperConfig.Running then
+                pcall(function() if BoothController then for _, player in pairs(Players:GetPlayers()) do if player ~= LocalPlayer then local boothData = BoothController:GetPlayerBoothData(player); if boothData then processBoothData(player, boothData) end end end end end)
+                if getgenv().SniperConfig.AutoHop then
+                    local durasi = tick() - hopTimer
+                    local sisa = math.ceil(getgenv().SniperConfig.HopDelay - durasi)
+                    if StatusLbl.Text ~= "SWEEPING..." then if sisa % 1 == 0 then StatusLbl.Text = "SCAN... Hop: " .. sisa .. "s"; StatusLbl.TextColor3 = Color3.fromRGB(255, 50, 50) end end
+                    if sisa <= 0 then StatusLbl.Text = "HOPPING..."; getgenv().SniperConfig.Running = true; ServerHop(); task.wait(10) end
+                end
+            else hopTimer = tick() end
+            task.wait() 
+        end
+    end)
+    -- KODE V119 END --
+end
+
+-- ==================================================================
+-- 🔄 AUTO-LOGIN LOGIC
+-- ==================================================================
+local AutoLoginSuccess = false
+
+if isfile(KEY_FILE_NAME) then
+    local SavedKey = readfile(KEY_FILE_NAME)
+    if SavedKey and SavedKey ~= "" then
+        local dbData = GetLinkData(DATABASE_URL)
+        if CheckIsValid(dbData, SavedKey) then
+            AutoLoginSuccess = true
+            StartSealSniperV119()
+        end
+    end
+end
+
+if AutoLoginSuccess then return end
+
+-- ==================================================================
+-- 🎨 GUI KEY SYSTEM
+-- ==================================================================
+if CoreGui:FindFirstChild("SealKeySystem") then CoreGui.SealKeySystem:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealKeySystem"; ScreenGui.Parent = CoreGui; ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30); MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110); MainFrame.Size = UDim2.new(0, 320, 0, 220); MainFrame.BorderSizePixel = 0; Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 0, 0, 15); Title.Size = UDim2.new(1, 0, 0, 30); Title.Font = Enum.Font.GothamBlack; Title.Text = "SEAL SNIPER HUB"; Title.TextColor3 = Color3.fromRGB(0, 255, 150); Title.TextSize = 22
+local KeyInput = Instance.new("TextBox"); KeyInput.Parent = MainFrame; KeyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 45); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0); KeyInput.Size = UDim2.new(0.8, 0, 0, 40); KeyInput.Font = Enum.Font.GothamBold; KeyInput.PlaceholderText = "Paste Key Here..."; KeyInput.Text = ""; KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255); KeyInput.TextSize = 14; Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 6)
+local VerifyBtn = Instance.new("TextButton"); VerifyBtn.Parent = MainFrame; VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100); VerifyBtn.Position = UDim2.new(0.1, 0, 0.6, 0); VerifyBtn.Size = UDim2.new(0.8, 0, 0, 35); VerifyBtn.Font = Enum.Font.GothamBold; VerifyBtn.Text = "LOGIN & SAVE KEY"; VerifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255); VerifyBtn.TextSize = 13; Instance.new("UICorner", VerifyBtn).CornerRadius = UDim.new(0, 6)
+local CloseKeyBtn = Instance.new("TextButton"); CloseKeyBtn.Name = "CloseButton"; CloseKeyBtn.Parent = MainFrame; CloseKeyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseKeyBtn.Position = UDim2.new(1, -30, 0, 5); CloseKeyBtn.Size = UDim2.new(0, 25, 0, 25); CloseKeyBtn.Font = Enum.Font.GothamBlack; CloseKeyBtn.Text = "X"; CloseKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255); CloseKeyBtn.TextSize = 14; Instance.new("UICorner", CloseKeyBtn).CornerRadius = UDim.new(0, 6)
+local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 0, 0.85, 0); StatusLbl.Size = UDim2.new(1, 0, 0, 20); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "Please login first"; StatusLbl.TextColor3 = Color3.fromRGB(100, 100, 100); StatusLbl.TextSize = 11
+
+CloseKeyBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+VerifyBtn.MouseButton1Click:Connect(function()
+    StatusLbl.Text = "Verifying..."
+    StatusLbl.TextColor3 = Color3.fromRGB(255, 255, 0)
+    
+    local InputText = KeyInput.Text
+    local success, response = pcall(function() return GetLinkData(DATABASE_URL) end)
+    
+    if success and response then
+        if CheckIsValid(response, InputText) then
+            if writefile then writefile(KEY_FILE_NAME, InputText:gsub("[%s%c]+", "")) end
+            StartSealSniperV119()
+        else
+            StatusLbl.Text = "INVALID KEY"
+            StatusLbl.TextColor3 = Color3.fromRGB(255, 50, 50)
+        end
+    else
+        StatusLbl.Text = "CONNECTION ERROR"
+        StatusLbl.TextColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
