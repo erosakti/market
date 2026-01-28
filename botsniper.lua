@@ -1,6 +1,6 @@
 --[[ 
-    🛡️ SEAL SNIPER V119 + KEY SYSTEM (FIXED WHITESPACE)
-    Status: SOLVED INVALID KEY ISSUE (\r\n fix)
+    🛡️ SEAL SNIPER V119 + KEY SYSTEM (UI FIXED)
+    Status: SOLVED TEXT OVERFLOW & WHITESPACE
 ]]
 
 -- ==================================================================
@@ -34,15 +34,9 @@ end
 -- 2. FUNGSI CEK KEY (VERSI AGRESIF)
 local function CheckIsValid(databaseText, userKey)
     if not databaseText or not userKey then return false end
-    
-    -- Hapus semua spasi (%s) dan enter/tab (%c) dari input user
     local cleanInput = userKey:gsub("[%s%c]+", "") 
-    
     for _, line in ipairs(databaseText:split("\n")) do
-        -- Hapus semua spasi dan enter dari baris database
         local cleanLine = line:gsub("[%s%c]+", "")
-        
-        -- Bandingkan yang sudah bersih
         if cleanLine ~= "" and cleanLine == cleanInput then
             return true
         end
@@ -271,7 +265,12 @@ if CoreGui:FindFirstChild("SealKeySystem") then CoreGui.SealKeySystem:Destroy() 
 local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "SealKeySystem"; ScreenGui.Parent = CoreGui; ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 local MainFrame = Instance.new("Frame"); MainFrame.Name = "MainFrame"; MainFrame.Parent = ScreenGui; MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30); MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110); MainFrame.Size = UDim2.new(0, 320, 0, 220); MainFrame.BorderSizePixel = 0; Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 local Title = Instance.new("TextLabel"); Title.Parent = MainFrame; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0, 0, 0, 15); Title.Size = UDim2.new(1, 0, 0, 30); Title.Font = Enum.Font.GothamBlack; Title.Text = "SEAL SNIPER HUB"; Title.TextColor3 = Color3.fromRGB(0, 255, 150); Title.TextSize = 22
-local KeyInput = Instance.new("TextBox"); KeyInput.Parent = MainFrame; KeyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 45); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0); KeyInput.Size = UDim2.new(0.8, 0, 0, 40); KeyInput.Font = Enum.Font.GothamBold; KeyInput.PlaceholderText = "Paste Key Here..."; KeyInput.Text = ""; KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255); KeyInput.TextSize = 14; Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 6)
+
+-- 🛠️ FIXED KEY INPUT: CLIPS DESCENDANTS TRUE 🛠️
+local KeyInput = Instance.new("TextBox"); KeyInput.Parent = MainFrame; KeyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 45); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0); KeyInput.Size = UDim2.new(0.8, 0, 0, 40); KeyInput.Font = Enum.Font.GothamBold; KeyInput.PlaceholderText = "Paste Key Here..."; KeyInput.Text = ""; KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255); KeyInput.TextSize = 14; 
+KeyInput.ClipsDescendants = true -- INI PERBAIKANNYA!
+Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 6)
+
 local VerifyBtn = Instance.new("TextButton"); VerifyBtn.Parent = MainFrame; VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100); VerifyBtn.Position = UDim2.new(0.1, 0, 0.6, 0); VerifyBtn.Size = UDim2.new(0.8, 0, 0, 35); VerifyBtn.Font = Enum.Font.GothamBold; VerifyBtn.Text = "LOGIN & SAVE KEY"; VerifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255); VerifyBtn.TextSize = 13; Instance.new("UICorner", VerifyBtn).CornerRadius = UDim.new(0, 6)
 local CloseKeyBtn = Instance.new("TextButton"); CloseKeyBtn.Name = "CloseButton"; CloseKeyBtn.Parent = MainFrame; CloseKeyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseKeyBtn.Position = UDim2.new(1, -30, 0, 5); CloseKeyBtn.Size = UDim2.new(0, 25, 0, 25); CloseKeyBtn.Font = Enum.Font.GothamBlack; CloseKeyBtn.Text = "X"; CloseKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255); CloseKeyBtn.TextSize = 14; Instance.new("UICorner", CloseKeyBtn).CornerRadius = UDim.new(0, 6)
 local StatusLbl = Instance.new("TextLabel"); StatusLbl.Parent = MainFrame; StatusLbl.BackgroundTransparency = 1; StatusLbl.Position = UDim2.new(0, 0, 0.85, 0); StatusLbl.Size = UDim2.new(1, 0, 0, 20); StatusLbl.Font = Enum.Font.Gotham; StatusLbl.Text = "Please login first"; StatusLbl.TextColor3 = Color3.fromRGB(100, 100, 100); StatusLbl.TextSize = 11
